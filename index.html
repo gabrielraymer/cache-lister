@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cache Lister — by GoblinCache TCG</title>
+  <meta name="description" content="Turn your card list into a TCGPlayer import CSV. Upload two files, download one clean import. No installs, no accounts, no data leaves your browser.">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #13161e;
+      --surface2: #1b1e28;
+      --border: #252833;
+      --border-active: #3d4158;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-secondary: #94a3b8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .header-by {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header-tagline {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 540px) {
+      .header-tagline { display: none; }
+    }
+
+    /* ── Main ────────────────────────────────────────── */
+    main {
+      flex: 1;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+
+    .hero h1 {
+      font-size: clamp(26px, 5vw, 38px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.55;
+    }
+
+    /* ── Step cards ──────────────────────────────────── */
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .step.active { border-color: var(--border-active); }
+
+    .step.disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 20px;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .step.active .step-num,
+    .step.done .step-num {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .step-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .step-badge {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .step-badge.success {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--success);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .step-body {
+      padding: 0 20px 20px;
+    }
+
+    /* ── Drop zone ───────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(245, 158, 11, 0.04);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dz-icon { font-size: 28px; margin-bottom: 8px; }
+
+    .dz-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .dz-text strong { color: var(--accent); }
+
+    .dz-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* ── File loaded state ───────────────────────────── */
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(34, 197, 94, 0.07);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 8px;
+    }
+
+    .fi-icon { font-size: 18px; flex-shrink: 0; }
+
+    .fi-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .fi-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .fi-reset {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px 7px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .fi-reset:hover { color: var(--error); }
+
+    /* ── Preview / column map ────────────────────────── */
+    .preview-section { margin-top: 16px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .col-map {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+
+    .cmi {
+      padding: 9px 12px;
+      background: var(--surface2);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .cmi-key {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .cmi-val {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .cmi-val.absent { color: var(--text-muted); font-style: italic; font-weight: 400; }
+    .cmi-val.missing { color: var(--error); font-weight: 600; }
+
+    /* ── Table ───────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead th {
+      padding: 8px 12px;
+      text-align: left;
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface2); }
+
+    /* ── Banners ─────────────────────────────────────── */
+    .banner {
+      display: flex;
+      gap: 10px;
+      padding: 11px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .banner.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .banner.info {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      color: #93c5fd;
+    }
+
+    /* ── Results ─────────────────────────────────────── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 560px) {
+      .results-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .rcard {
+      padding: 14px 16px;
+      background: var(--surface2);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .rcard-val {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .rcard-label { font-size: 12px; color: var(--text-muted); }
+    .rcard.good .rcard-val { color: var(--success); }
+    .rcard.warn .rcard-val { color: var(--warning); }
+    .rcard.neutral .rcard-val { color: var(--text); }
+
+    /* ── Buttons ─────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary.lg { padding: 13px 28px; font-size: 15px; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { color: var(--text); border-color: var(--border-active); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Run section ─────────────────────────────────── */
+    .run-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0 6px;
+      gap: 10px;
+    }
+
+    .run-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── Unmatched ───────────────────────────────────── */
+    .unmatched-section { margin-top: 22px; }
+
+    .unmatched-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.error {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* ── Footer ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--accent); }
+
+    .footer-sep { color: var(--border-active); }
+
+    .footer-privacy {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── Utility ─────────────────────────────────────── */
+    .hidden { display: none !important; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.55s linear infinite;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="https://goblincachetcg.com" class="header-logo" target="_blank" rel="noopener noreferrer">
+      <div class="logo-icon">🗃️</div>
+      <div>
+        <div class="header-title">Cache Lister</div>
+        <div class="header-by">by GoblinCache TCG</div>
+      </div>
+    </a>
+    <div class="header-tagline">Sort your bulk. Not your sanity.</div>
+  </header>
+
+  <main>
+
+    <div class="hero">
+      <h1>Turn your card list into a<br><span>TCGPlayer import</span></h1>
+      <p class="hero-sub">Upload your TCGPlayer catalog and a simple card list. Get one clean import CSV in seconds. No installs, no accounts — everything runs in your browser.</p>
+    </div>
+
+    <!-- ── Step 1 ── -->
+    <div class="step active" id="step1">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Upload TCGPlayer Catalog CSV</div>
+          <div class="step-subtitle">Export from TCGPlayer → Pricing tab → "Export Filtered CSV" or "Export from Live"</div>
+        </div>
+        <div class="step-badge" id="s1-badge">Required</div>
+      </div>
+      <div class="step-body">
+        <div class="drop-zone" id="dz1"
+             ondragover="onDragOver(event,'dz1')"
+             ondragleave="onDragLeave('dz1')"
+             ondrop="onDrop(event,1)">
+          <input type="file" accept=".csv,text/csv" onchange="onFileInput(event,1)">
+          <div class="dz-icon">📋</div>
+          <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
+          <div class="dz-hint">TCGPlayer catalog CSV</div>
+        </div>
+        <div id="f1-info" class="hidden"></div>
+        <div id="f1-err"  class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- ── Step 2 ── -->
+    <div class="step disabled" id="step2">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Upload Your Card List CSV</div>
+          <div class="step-subtitle">Columns: Name, Number, Set, Condition, Quantity — plus optional Foil and Price</div>
+        </div>
+        <div class="step-badge" id="s2-badge">Upload catalog first</div>
+      </div>
+      <div class="step-body">
+        <div class="drop-zone" id="dz2"
+             ondragover="onDragOver(event,'dz2')"
+             ondragleave="onDragLeave('dz2')"
+             ondrop="onDrop(event,2)">
+          <input type="file" accept=".csv,text/csv" onchange="onFileInput(event,2)">
+          <div class="dz-icon">📝</div>
+          <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
+          <div class="dz-hint">Your card list CSV</div>
+        </div>
+        <div id="f2-info"    class="hidden"></div>
+        <div id="f2-preview" class="hidden"></div>
+        <div id="f2-err"     class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- ── Step 3 ── -->
+    <div class="step disabled" id="step3">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Match &amp; Export</div>
+          <div class="step-subtitle">Run the matcher, then download your ready-to-import CSV</div>
+        </div>
+        <div class="step-badge" id="s3-badge">Upload both files first</div>
+      </div>
+      <div class="step-body">
+        <div class="run-section">
+          <button class="btn btn-primary lg" id="run-btn" onclick="runMatcher()" disabled>
+            Run Cache Lister
+          </button>
+          <div class="run-hint">All processing happens locally — nothing is sent to any server.</div>
+        </div>
+        <div id="results" class="hidden mt-16"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <span>Cache Lister &mdash; <a href="https://goblincachetcg.com" target="_blank" rel="noopener noreferrer">GoblinCache TCG</a></span>
+    <span class="footer-sep">&middot;</span>
+    <a href="https://github.com/gabrielraymer/cache-lister" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <span class="footer-sep">&middot;</span>
+    <span>MIT License &mdash; open source</span>
+    <div class="footer-privacy">🔒 Your files never leave your browser.</div>
+  </footer>
+
+  <script>
+    'use strict';
+
+    // ── State ──────────────────────────────────────────────────────────────
+    const S = {
+      catalog: null,
+      sellerList: null,
+      colMap: {},
+      matchResults: null,
+    };
+
+    // ── Condition mapping ──────────────────────────────────────────────────
+    const COND = {
+      nm:                 'Near Mint',
+      lp:                 'Lightly Played',
+      mp:                 'Moderately Played',
+      hp:                 'Heavily Played',
+      dmg:                'Damaged',
+      'near mint':        'Near Mint',
+      'lightly played':   'Lightly Played',
+      'moderately played':'Moderately Played',
+      'heavily played':   'Heavily Played',
+      'damaged':          'Damaged',
+    };
+
+    function mapCond(v) {
+      if (!v) return null;
+      return COND[v.trim().toLowerCase()] || null;
+    }
+
+    function mapFoil(v) {
+      if (v === null || v === undefined) return 'Normal';
+      const s = String(v).trim().toLowerCase();
+      return ['yes','true','1','foil'].includes(s) ? 'Foil' : 'Normal';
+    }
+
+    function normSet(s) {
+      if (!s) return '';
+      return String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+    }
+
+    function normNum(v) {
+      if (!v) return '';
+      return String(v).trim().toLowerCase();
+    }
+
+    function normName(v) {
+      if (!v) return '';
+      return String(v).trim().toLowerCase();
+    }
+
+    // ── Drag & drop ────────────────────────────────────────────────────────
+    function onDragOver(e, id) {
+      e.preventDefault();
+      document.getElementById(id).classList.add('drag-over');
+    }
+
+    function onDragLeave(id) {
+      document.getElementById(id).classList.remove('drag-over');
+    }
+
+    function onDrop(e, n) {
+      e.preventDefault();
+      document.getElementById('dz' + n).classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) processFile(f, n);
+    }
+
+    function onFileInput(e, n) {
+      const f = e.target.files[0];
+      if (f) processFile(f, n);
+      e.target.value = ''; // reset so same file can be re-uploaded
+    }
+
+    function processFile(file, n) {
+      const name = file.name.toLowerCase();
+      if (!name.endsWith('.csv') && file.type !== 'text/csv') {
+        showErr(n, 'Only CSV files are supported. Please upload a .csv file.');
+        return;
+      }
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: r => n === 1 ? onCatalogParsed(file.name, r) : onSellerParsed(file.name, r),
+        error:    e => showErr(n, 'Failed to parse CSV: ' + e.message),
+      });
+    }
+
+    // ── File 1 — TCGPlayer catalog ─────────────────────────────────────────
+    const CAT_REQUIRED = [
+      'TCGplayer Id','Product Name','Set Name','Number',
+      'Condition','Printing','Market Price','Add to Quantity',
+    ];
+
+    function onCatalogParsed(filename, res) {
+      clearErr(1);
+      if (!res.data.length) { showErr(1, 'The file appears to be empty.'); return; }
+
+      const cols = res.meta.fields || [];
+      if (!cols.includes('TCGplayer Id')) {
+        showErr(1, 'This doesn\'t look like a TCGPlayer export — "TCGplayer Id" column not found. Export from TCGPlayer\'s Pricing tab using "Export Filtered CSV".');
+        return;
+      }
+      const missing = CAT_REQUIRED.filter(c => !cols.includes(c));
+      if (missing.length) {
+        showErr(1, 'Missing required columns: ' + missing.map(c => '"' + c + '"').join(', '));
+        return;
+      }
+
+      S.catalog = res.data;
+
+      // UI
+      const el = $('#f1-info');
+      el.className = '';
+      el.innerHTML = fileInfoHtml(filename, res.data.length, () => resetFile(1));
+      $('#dz1').classList.add('hidden');
+      setBadge('s1-badge', res.data.length.toLocaleString() + ' rows', true);
+      $('#step1').classList.add('done');
+
+      // Unlock step 2
+      $('#step2').classList.remove('disabled');
+      setBadge('s2-badge', 'Ready', false);
+    }
+
+    // ── File 2 — Seller list ───────────────────────────────────────────────
+    const SELLER_REQ = ['name','set','condition','quantity'];
+
+    function detectCols(headers) {
+      const lc = headers.map(h => h.toLowerCase().trim());
+      const find = (...cands) => {
+        for (const c of cands) {
+          const i = lc.findIndex(h => h === c || h.replace(/[^a-z0-9]/g,'') === c.replace(/[^a-z0-9]/g,''));
+          if (i >= 0) return headers[i];
+        }
+        return null;
+      };
+      return {
+        name:      find('name','card name','card','product name'),
+        number:    find('number','collector number','collector #','no','#','num','col #','collectornum'),
+        set:       find('set','set name','edition','expansion','set name (tcg)'),
+        condition: find('condition','cond'),
+        quantity:  find('quantity','qty','count','amount','copies','add to quantity'),
+        foil:      find('foil','printing','finish','is foil'),
+        price:     find('price','tcg price','list price','sell price','market price','tcg marketplace price','buy price','your price'),
+      };
+    }
+
+    function onSellerParsed(filename, res) {
+      clearErr(2);
+      clearPreview();
+      if (!res.data.length) { showErr(2, 'The file appears to be empty.'); return; }
+
+      const colMap = detectCols(res.meta.fields || []);
+      const missing = SELLER_REQ.filter(k => !colMap[k]);
+      if (missing.length) {
+        showErr(2, 'Missing required columns: ' + missing.join(', ') +
+          '. Your CSV must include Name, Set, Condition, and Quantity columns.');
+        return;
+      }
+
+      S.sellerList = res.data;
+      S.colMap = colMap;
+
+      // File info
+      const el = $('#f2-info');
+      el.className = '';
+      el.innerHTML = fileInfoHtml(filename, res.data.length, () => resetFile(2));
+      $('#dz2').classList.add('hidden');
+      setBadge('s2-badge', res.data.length.toLocaleString() + ' rows', true);
+      $('#step2').classList.add('done');
+
+      showPreview(res.data, colMap);
+
+      // Unlock step 3
+      $('#step3').classList.remove('disabled');
+      setBadge('s3-badge', 'Ready', false);
+      $('#run-btn').disabled = false;
+    }
+
+    function showPreview(rows, cm) {
+      const el = $('#f2-preview');
+      el.classList.remove('hidden');
+
+      const FIELDS = [
+        { key:'name',      label:'Name',      req:true  },
+        { key:'number',    label:'Number',    req:false },
+        { key:'set',       label:'Set',       req:true  },
+        { key:'condition', label:'Condition', req:true  },
+        { key:'quantity',  label:'Quantity',  req:true  },
+        { key:'foil',      label:'Foil',      req:false },
+        { key:'price',     label:'Price',     req:false },
+      ];
+
+      const mapHtml = FIELDS.map(f => {
+        const val = cm[f.key];
+        const cls = val ? '' : (f.req ? 'missing' : 'absent');
+        const display = val ? esc(val) : (f.req ? 'NOT FOUND' : 'not detected');
+        return `<div class="cmi">
+          <div class="cmi-key">${f.label}</div>
+          <div class="cmi-val ${cls}">${display}</div>
+        </div>`;
+      }).join('');
+
+      const previewCols = Object.values(cm).filter(Boolean);
+      const thHtml = previewCols.map(h => `<th>${esc(h)}</th>`).join('');
+      const trHtml = rows.slice(0,5).map(row =>
+        '<tr>' + previewCols.map(h => `<td>${esc(row[h] || '')}</td>`).join('') + '</tr>'
+      ).join('');
+
+      el.innerHTML = `
+        <div class="preview-section">
+          <div class="section-label">Detected Column Mapping</div>
+          <div class="col-map">${mapHtml}</div>
+        </div>
+        <div class="preview-section mt-12">
+          <div class="section-label">Preview — first ${Math.min(rows.length,5)} rows</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>${thHtml}</tr></thead>
+              <tbody>${trHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function resetFile(n) {
+      if (n === 1) {
+        S.catalog = null;
+        $('#f1-info').innerHTML = '';
+        $('#f1-info').className = 'hidden';
+        $('#dz1').classList.remove('hidden');
+        clearErr(1);
+        setBadge('s1-badge', 'Required', false);
+        $('#step1').classList.remove('done');
+        resetFile(2);
+        $('#step2').classList.add('disabled');
+        setBadge('s2-badge', 'Upload catalog first', false);
+      } else {
+        S.sellerList = null;
+        S.colMap = {};
+        S.matchResults = null;
+        $('#f2-info').innerHTML = '';
+        $('#f2-info').className = 'hidden';
+        $('#dz2').classList.remove('hidden');
+        clearPreview();
+        clearErr(2);
+        setBadge('s2-badge', 'Ready', false);
+        $('#step2').classList.remove('done');
+        $('#step3').classList.add('disabled');
+        setBadge('s3-badge', 'Upload both files first', false);
+        $('#run-btn').disabled = true;
+        $('#results').classList.add('hidden');
+        $('#results').innerHTML = '';
+      }
+    }
+
+    // ── Catalog index ──────────────────────────────────────────────────────
+    function buildIndex(rows) {
+      const byNumCP  = new Map(); // (number||cond||print) → [rows]
+      const byNameCP = new Map(); // (name||cond||print) → [rows]
+
+      for (const row of rows) {
+        const num   = normNum(row['Number']);
+        const cond  = (row['Condition'] || '').trim();
+        const print = (row['Printing']  || 'Normal').trim();
+        const name  = normName(row['Product Name']);
+
+        if (num) {
+          const k = `${num}||${cond}||${print}`;
+          if (!byNumCP.has(k)) byNumCP.set(k, []);
+          byNumCP.get(k).push(row);
+        }
+        if (name) {
+          const k = `${name}||${cond}||${print}`;
+          if (!byNameCP.has(k)) byNameCP.set(k, []);
+          byNameCP.get(k).push(row);
+        }
+      }
+      return { byNumCP, byNameCP };
+    }
+
+    function setsMatch(catalogSetName, sellerSet) {
+      const cat  = normSet(catalogSetName);
+      const sell = normSet(sellerSet);
+      if (!sell) return true; // no set given — accept anything
+      return cat === sell || cat.includes(sell) || sell.includes(cat);
+    }
+
+    function bestSetMatch(candidates, sellerSet) {
+      if (!candidates || !candidates.length) return null;
+      // Exact normalized match first
+      const ns = normSet(sellerSet);
+      const exact = candidates.find(r => normSet(r['Set Name']) === ns);
+      if (exact) return exact;
+      // Substring match
+      return candidates.find(r => setsMatch(r['Set Name'], sellerSet)) || null;
+    }
+
+    function matchRow(row, cm, idx) {
+      const rawName  = row[cm.name]      || '';
+      const rawNum   = cm.number ? (row[cm.number] || '') : '';
+      const rawSet   = row[cm.set]       || '';
+      const rawCond  = row[cm.condition] || '';
+      const rawFoil  = cm.foil ? (row[cm.foil] || '') : '';
+
+      const cond    = mapCond(rawCond);
+      const printing = mapFoil(rawFoil);
+      const num     = normNum(rawNum);
+      const name    = normName(rawName);
+
+      if (!cond) {
+        return { match: null, error: `Unknown condition "${rawCond}" — use NM, LP, MP, HP, or DMG` };
+      }
+
+      // Priority 1: Number + Set + Condition + Printing
+      if (num) {
+        const k = `${num}||${cond}||${printing}`;
+        const m = bestSetMatch(idx.byNumCP.get(k), rawSet);
+        if (m) return { match: m, via: 'number+set+cond+print' };
+      }
+
+      // Priority 2: Name + Set + Condition + Printing
+      if (name) {
+        const k = `${name}||${cond}||${printing}`;
+        const m = bestSetMatch(idx.byNameCP.get(k), rawSet);
+        if (m) return { match: m, via: 'name+set+cond+print' };
+      }
+
+      const desc = rawName || rawNum || '(unknown)';
+      return {
+        match: null,
+        error: `No catalog match for "${desc}" — ${rawSet} / ${rawCond} / ${printing === 'Foil' ? 'Foil' : 'Non-foil'}`,
+      };
+    }
+
+    // ── Runner ─────────────────────────────────────────────────────────────
+    function runMatcher() {
+      const btn = $('#run-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Matching…';
+      setTimeout(() => {
+        try { doMatch(); }
+        finally {
+          btn.disabled = false;
+          btn.innerHTML = 'Run Cache Lister';
+        }
+      }, 20);
+    }
+
+    function doMatch() {
+      const { catalog, sellerList, colMap: cm } = S;
+      const idx = buildIndex(catalog);
+
+      const matched   = []; // { catalogRow, quantity, price }
+      const unmatched = []; // { row, error }
+
+      for (const row of sellerList) {
+        const rawQty = (cm.quantity ? row[cm.quantity] : '') || '0';
+        const qty    = parseInt(rawQty, 10) || 0;
+        const price  = (cm.price ? (row[cm.price] || '') : '').trim();
+
+        if (qty <= 0) continue;
+
+        const r = matchRow(row, cm, idx);
+        if (r.match) {
+          matched.push({ catalogRow: r.match, quantity: qty, price });
+        } else {
+          unmatched.push({ row, error: r.error });
+        }
+      }
+
+      // Dedup by TCGplayer Id — sum quantities, keep first price
+      const byId = new Map();
+      for (const m of matched) {
+        const id = m.catalogRow['TCGplayer Id'];
+        if (byId.has(id)) {
+          byId.get(id).quantity += m.quantity;
+        } else {
+          byId.set(id, { ...m });
+        }
+      }
+
+      const deduped    = [...byId.values()];
+      const mergedDups = matched.length - deduped.length;
+
+      S.matchResults = { deduped, unmatched };
+      showResults(deduped, unmatched, mergedDups, sellerList.length);
+    }
+
+    // ── Results UI ─────────────────────────────────────────────────────────
+    function showResults(deduped, unmatched, mergedDups, total) {
+      const el = $('#results');
+      el.classList.remove('hidden');
+
+      setBadge('s3-badge', deduped.length + ' matched', true);
+
+      const hasUnmatched = unmatched.length > 0;
+      const unmatchedBtnHtml = hasUnmatched
+        ? `<button class="btn btn-ghost" onclick="dlUnmatched()">Download Unmatched CSV</button>`
+        : '';
+
+      let unmatchedTableHtml = '';
+      if (hasUnmatched) {
+        const cm = S.colMap;
+        const rows = unmatched.map(u => {
+          const name = cm.name ? (u.row[cm.name] || '—') : '—';
+          const set  = cm.set  ? (u.row[cm.set]  || '—') : '—';
+          const cond = cm.condition ? (u.row[cm.condition] || '—') : '—';
+          const foil = cm.foil ? (u.row[cm.foil] || '—') : '—';
+          return `<tr>
+            <td>${esc(name)}</td>
+            <td>${esc(set)}</td>
+            <td>${esc(cond)}</td>
+            <td>${esc(foil)}</td>
+            <td style="color:var(--error);font-size:11px;max-width:260px;white-space:normal;">${esc(u.error || '')}</td>
+          </tr>`;
+        }).join('');
+
+        unmatchedTableHtml = `
+          <div class="unmatched-section">
+            <div class="unmatched-header">
+              <div class="section-label" style="margin:0;">
+                Unmatched Rows &nbsp;<span class="badge error">${unmatched.length}</span>
+              </div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="dlUnmatched()">
+                Download Unmatched CSV
+              </button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Name</th><th>Set</th><th>Condition</th><th>Foil</th><th>Reason</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+
+      el.innerHTML = `
+        <div class="results-grid">
+          <div class="rcard neutral">
+            <div class="rcard-val">${total}</div>
+            <div class="rcard-label">Seller rows</div>
+          </div>
+          <div class="rcard good">
+            <div class="rcard-val">${deduped.length}</div>
+            <div class="rcard-label">Matched</div>
+          </div>
+          <div class="rcard ${hasUnmatched ? 'warn' : 'good'}">
+            <div class="rcard-val">${unmatched.length}</div>
+            <div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div>
+          </div>
+          <div class="rcard neutral">
+            <div class="rcard-val">${mergedDups}</div>
+            <div class="rcard-label">Dupes merged</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
+          ${unmatchedBtnHtml}
+        </div>
+        ${unmatchedTableHtml}
+      `;
+    }
+
+    // ── Downloads ──────────────────────────────────────────────────────────
+    const OUT_COLS = [
+      'TCGplayer Id','Product Name','Set Name','Number',
+      'Condition','Printing','Market Price','TCG Marketplace Price','Add to Quantity',
+    ];
+
+    function dlOutput() {
+      const { deduped } = S.matchResults;
+      const rows = deduped.map(m => {
+        const r = m.catalogRow;
+        const market = r['Market Price'] || '';
+        return {
+          'TCGplayer Id':            r['TCGplayer Id'],
+          'Product Name':            r['Product Name'],
+          'Set Name':                r['Set Name'],
+          'Number':                  r['Number'],
+          'Condition':               r['Condition'],
+          'Printing':                r['Printing'],
+          'Market Price':            market,
+          'TCG Marketplace Price':   m.price || market,
+          'Add to Quantity':         m.quantity,
+        };
+      });
+      dlFile(Papa.unparse(rows, { columns: OUT_COLS }), 'tcgplayer-import.csv');
+    }
+
+    function dlUnmatched() {
+      const { unmatched } = S.matchResults;
+      const rows = unmatched.map(u => ({ ...u.row, _match_error: u.error || '' }));
+      dlFile(Papa.unparse(rows), 'cache-lister-unmatched.csv');
+    }
+
+    function dlFile(content, filename) {
+      const a = Object.assign(document.createElement('a'), {
+        href:     URL.createObjectURL(new Blob([content], { type: 'text/csv' })),
+        download: filename,
+      });
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function $(id) { return document.getElementById(id); }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showErr(n, msg) {
+      const el = $('f' + n + '-err');
+      el.className = 'banner error';
+      el.innerHTML = '&#9888; ' + esc(msg);
+    }
+
+    function clearErr(n) {
+      const el = $('f' + n + '-err');
+      el.className = 'hidden';
+      el.innerHTML = '';
+    }
+
+    function clearPreview() {
+      const el = $('f2-preview');
+      el.classList.add('hidden');
+      el.innerHTML = '';
+    }
+
+    function setBadge(id, text, success) {
+      const el = $(id);
+      el.textContent = text;
+      el.className = 'step-badge' + (success ? ' success' : '');
+    }
+
+    function fileInfoHtml(name, count, onReset) {
+      // onReset is a callback — store it temporarily so inline onclick can reach it
+      const fnKey = '_reset_' + Date.now();
+      window[fnKey] = () => { onReset(); delete window[fnKey]; };
+      return `<div class="file-info">
+        <span class="fi-icon">✅</span>
+        <div>
+          <div class="fi-name">${esc(name)}</div>
+          <div class="fi-meta">${count.toLocaleString()} rows loaded</div>
+        </div>
+        <button class="fi-reset" onclick="${fnKey}()" title="Remove">✕</button>
+      </div>`;
+    }
+  </script>
+
+</body>
+</html>
