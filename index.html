@@ -232,6 +232,7 @@
       color: var(--accent);
       cursor: pointer;
       text-decoration: underline;
+      font-weight: bold;
     }
     .browse-link:hover { color: var(--accent-hover); }
 
@@ -592,7 +593,7 @@
              ondrop="onDrop(event,1)">
           <input type="file" id="fi1" accept=".csv,text/csv" onchange="onFileInput(event,1)">
           <div class="dz-icon">📋</div>
-          <div class="dz-text"><strong class="browse-link" onclick="document.getElementById('fi1').click()">Click to browse</strong> or drag &amp; drop</div>
+          <div class="dz-text"><label for="fi1" class="browse-link">Click to browse</label> or drag &amp; drop</div>
           <div class="dz-hint">TCGPlayer catalog CSV</div>
         </div>
         <div id="f1-info" class="hidden"></div>
@@ -618,7 +619,7 @@
              ondrop="onDrop(event,2)">
           <input type="file" id="fi2" accept=".csv,text/csv" onchange="onFileInput(event,2)">
           <div class="dz-icon">📝</div>
-          <div class="dz-text"><strong class="browse-link" onclick="document.getElementById('fi2').click()">Click to browse</strong> or drag &amp; drop</div>
+          <div class="dz-text"><label for="fi2" class="browse-link">Click to browse</label> or drag &amp; drop</div>
           <div class="dz-hint">Your card list CSV</div>
         </div>
         <div id="f2-info"    class="hidden"></div>
