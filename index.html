@@ -675,6 +675,28 @@
       matchResults: null,
     };
 
+    // ── Scryfall set code → full name map (fetched silently on page load) ──
+    const scryfallSetsPromise = (async () => {
+      try {
+        const res = await fetch('https://api.scryfall.com/sets');
+        if (!res.ok) return new Map();
+        const data = await res.json();
+        const map = new Map();
+        for (const s of (data.data || [])) {
+          if (s.code && s.name) map.set(s.code.toLowerCase(), s.name);
+        }
+        return map;
+      } catch {
+        return new Map();
+      }
+    })();
+
+    function resolveSetCode(rawSet, setsMap) {
+      if (!rawSet || !setsMap || !setsMap.size) return rawSet;
+      const code = String(rawSet).trim().replace(/^\[|\]$/g, '').toLowerCase();
+      return setsMap.get(code) || rawSet;
+    }
+
     // ── Condition mapping ──────────────────────────────────────────────────
     const COND = {
       nm:                 'Near Mint',
@@ -979,10 +1001,10 @@
       return null;
     }
 
-    function matchRow(row, cm, idx) {
+    function matchRow(row, cm, idx, setsMap) {
       const rawName  = row[cm.name]      || '';
       const rawNum   = cm.number ? (row[cm.number] || '') : '';
-      const rawSet   = row[cm.set]       || '';
+      const rawSet   = resolveSetCode(row[cm.set] || '', setsMap);
       const rawCond  = row[cm.condition] || '';
       const rawFoil  = cm.foil ? (row[cm.foil] || '') : '';
 
@@ -1025,22 +1047,21 @@
     }
 
     // ── Runner ─────────────────────────────────────────────────────────────
-    function runMatcher() {
+    async function runMatcher() {
       const btn = $('#run-btn');
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner"></span> Matching…';
-      setTimeout(() => {
-        try { doMatch(); }
-        finally {
-          btn.disabled = false;
-          btn.innerHTML = 'Run Cache Lister';
-        }
-      }, 20);
+      try { await doMatch(); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Run Cache Lister';
+      }
     }
 
-    function doMatch() {
+    async function doMatch() {
       const { catalog, sellerList, colMap: cm } = S;
       const idx = buildIndex(catalog);
+      const setsMap = await scryfallSetsPromise;
 
       const matched   = []; // { catalogRow, quantity, price }
       const unmatched = []; // { row, error }
@@ -1052,7 +1073,7 @@
 
         if (qty <= 0) continue;
 
-        const r = matchRow(row, cm, idx);
+        const r = matchRow(row, cm, idx, setsMap);
         if (r.match) {
           matched.push({ catalogRow: r.match, quantity: qty, price });
         } else {
