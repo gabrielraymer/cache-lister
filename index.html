@@ -586,6 +586,7 @@
       </div>
       <div class="step-body">
         <div class="drop-zone" id="dz1"
+             ondragenter="onDragOver(event,'dz1')"
              ondragover="onDragOver(event,'dz1')"
              ondragleave="onDragLeave('dz1')"
              ondrop="onDrop(event,1)">
@@ -611,6 +612,7 @@
       </div>
       <div class="step-body">
         <div class="drop-zone" id="dz2"
+             ondragenter="onDragOver(event,'dz2')"
              ondragover="onDragOver(event,'dz2')"
              ondragleave="onDragLeave('dz2')"
              ondrop="onDrop(event,2)">
@@ -659,6 +661,10 @@
 
   <script>
     'use strict';
+
+    // Prevent Chrome from opening files dropped outside the drop zones
+    window.addEventListener('dragover', e => e.preventDefault());
+    window.addEventListener('drop',     e => e.preventDefault());
 
     // ── State ──────────────────────────────────────────────────────────────
     const S = {
