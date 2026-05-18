@@ -1002,6 +1002,14 @@
         if (m) return { match: m, via: 'number+set+cond+print' };
       }
 
+      // Priority 1b: Number + Name + Condition + Printing (set code didn't match, verify by name)
+      if (num && name) {
+        const k = `${num}||${cond}||${printing}`;
+        const candidates = idx.byNumCP.get(k) || [];
+        const m = candidates.find(r => normName(r['Product Name']) === name);
+        if (m) return { match: m, via: 'number+name+cond+print' };
+      }
+
       // Priority 2: Name + Set + Condition + Printing
       if (name) {
         const k = `${name}||${cond}||${printing}`;
