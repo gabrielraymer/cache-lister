@@ -951,11 +951,18 @@
       return { byNumCP, byNameCP };
     }
 
+    function setInitials(name) {
+      return normSet(name).split(' ').filter(Boolean).map(w => w[0]).join('');
+    }
+
     function setsMatch(catalogSetName, sellerSet) {
       const cat  = normSet(catalogSetName);
       const sell = normSet(sellerSet);
       if (!sell) return true; // no set given — accept anything
-      return cat === sell || cat.includes(sell) || sell.includes(cat);
+      if (cat === sell || cat.includes(sell) || sell.includes(cat)) return true;
+      // Initialism: "ecc" matches "eternal card collection"
+      if (sell.length >= 2 && sell.length <= 6 && setInitials(catalogSetName) === sell) return true;
+      return false;
     }
 
     function bestSetMatch(candidates, sellerSet) {
@@ -964,8 +971,12 @@
       const ns = normSet(sellerSet);
       const exact = candidates.find(r => normSet(r['Set Name']) === ns);
       if (exact) return exact;
-      // Substring match
-      return candidates.find(r => setsMatch(r['Set Name'], sellerSet)) || null;
+      // Substring / initialism match
+      const fuzzy = candidates.find(r => setsMatch(r['Set Name'], sellerSet));
+      if (fuzzy) return fuzzy;
+      // Single candidate — collector number is specific enough, accept it
+      if (candidates.length === 1) return candidates[0];
+      return null;
     }
 
     function matchRow(row, cm, idx) {
