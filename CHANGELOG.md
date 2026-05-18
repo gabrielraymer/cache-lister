@@ -9,6 +9,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.1.1] — 2026-05-18
+
+### Fixed
+- CSP header removed from `netlify.toml` — was silently blocking file upload processing
+- Market price column now reads `TCG Market Price` (actual TCGPlayer export column name) with fallback to `Market Price`
+
+---
+
 ## [1.1.0] — 2026-05-17
 
 ### Added

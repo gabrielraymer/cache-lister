@@ -1130,7 +1130,7 @@
       const { deduped } = S.matchResults;
       const rows = deduped.map(m => {
         const r = m.catalogRow;
-        const market = r['Market Price'] || '';
+        const market = r['TCG Market Price'] || r['Market Price'] || '';
         return {
           'TCGplayer Id':            r['TCGplayer Id'],
           'Product Name':            r['Product Name'],
