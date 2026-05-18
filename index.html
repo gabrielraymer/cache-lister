@@ -1011,12 +1011,18 @@
     function buildIndex(rows) {
       const byNumCP  = new Map(); // (number||cond||print) → [rows]
       const byNameCP = new Map(); // (name||cond||print) → [rows]
+      const byName   = new Set(); // all normalized card names (for existence check)
+      const bySets   = new Set(); // all normalized set names (for existence check)
 
       for (const row of rows) {
         const num   = normNum(row['Number']);
         const cond  = (row['Condition'] || '').trim();
         const print = (row['Printing']  || 'Normal').trim();
         const name  = normName(row['Product Name']);
+        const set   = normSet(row['Set Name']);
+
+        if (name) byName.add(name);
+        if (set)  bySets.add(set);
 
         if (num) {
           const k = `${num}||${cond}||${print}`;
@@ -1029,7 +1035,7 @@
           byNameCP.get(k).push(row);
         }
       }
-      return { byNumCP, byNameCP };
+      return { byNumCP, byNameCP, byName, bySets };
     }
 
     function setInitials(name) {
@@ -1073,7 +1079,15 @@
       const name    = normName(rawName);
 
       if (!cond) {
-        return { match: null, error: `Unknown condition "${rawCond}" — use NM, LP, MP, HP, or DMG` };
+        return {
+          match: null,
+          checks: {
+            condition: { ok: false, label: `"${rawCond || '(empty)'}" — use NM, LP, MP, HP, DMG` },
+            name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
+            set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
+          },
+          error: `Unknown condition "${rawCond}"`,
+        };
       }
 
       // Priority 1: Number + Set + Condition + Printing (collector number confirms printing)
@@ -1111,6 +1125,11 @@
       const desc = rawName || rawNum || '(unknown)';
       return {
         match: null,
+        checks: {
+          condition: { ok: true, label: cond },
+          name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
+          set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
+        },
         error: `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / ${printing === 'Foil' ? 'Foil' : 'Non-foil'}`,
       };
     }
@@ -1152,7 +1171,7 @@
             matched.push({ catalogRow: r.match, quantity: qty, price });
           }
         } else {
-          unmatched.push({ row, error: r.error });
+          unmatched.push({ row, error: r.error, checks: r.checks });
         }
       }
 
@@ -1250,12 +1269,28 @@
           const set  = cm.set       ? (u.row[cm.set]       || '—') : '—';
           const cond = cm.condition ? (u.row[cm.condition] || '—') : '—';
           const foil = cm.foil      ? (u.row[cm.foil]      || '—') : '—';
+
+          let reasonHtml;
+          if (u.checks) {
+            const c = u.checks;
+            const chip = (ok, label) =>
+              `<span style="color:${ok ? 'var(--success)' : 'var(--error)'};font-size:11px;white-space:nowrap;">` +
+              `${ok ? '✓' : '✕'} ${esc(label)}</span>`;
+            reasonHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              ${chip(c.set.ok,  'Set: '  + c.set.label)}
+              ${chip(c.name.ok, 'Name: ' + c.name.label)}
+              ${chip(c.condition.ok, 'Cond: ' + c.condition.label)}
+            </div>`;
+          } else {
+            reasonHtml = `<span style="color:var(--error);font-size:11px;">${esc(u.error || '')}</span>`;
+          }
+
           return `<tr>
             <td>${esc(name)}</td>
             <td>${esc(set)}</td>
             <td>${esc(cond)}</td>
             <td>${esc(foil)}</td>
-            <td style="color:var(--error);font-size:11px;max-width:260px;white-space:normal;">${esc(u.error || '')}</td>
+            <td style="max-width:320px;white-space:normal;">${reasonHtml}</td>
           </tr>`;
         }).join('');
 
