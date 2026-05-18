@@ -1511,26 +1511,28 @@
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
+    // Column order must exactly match the TCGPlayer pricing import format
     const OUT_COLS = [
       'TCGplayer Id','Product Name','Set Name','Number',
-      'Condition','Printing','Market Price','TCG Marketplace Price','Add to Quantity',
+      'Condition','Printing','TCG Market Price','TCG Marketplace Price','Add to Quantity',
     ];
 
     function dlOutput() {
       const { deduped } = S.matchResults;
       const rows = deduped.map(m => {
         const r = m.catalogRow;
-        const market = r['TCG Market Price'] || r['Market Price'] || '';
+        const marketPrice      = r['TCG Market Price'] || r['Market Price'] || '';
+        const marketplacePrice = m.price || marketPrice; // fall back to market price if seller left it blank
         return {
-          'TCGplayer Id':            r['TCGplayer Id'],
-          'Product Name':            r['Product Name'],
-          'Set Name':                r['Set Name'],
-          'Number':                  r['Number'],
-          'Condition':               r['Condition'],
-          'Printing':                r['Printing'] || 'Normal',
-          'Market Price':            market,
-          'TCG Marketplace Price':   m.price || market,
-          'Add to Quantity':         m.quantity,
+          'TCGplayer Id':          r['TCGplayer Id'],
+          'Product Name':          r['Product Name'],
+          'Set Name':              r['Set Name'],
+          'Number':                r['Number'],
+          'Condition':             r['Condition'],
+          'Printing':              r['Printing'] || 'Normal',
+          'TCG Market Price':      marketPrice,
+          'TCG Marketplace Price': marketplacePrice,
+          'Add to Quantity':       m.quantity,
         };
       });
       dlFile(Papa.unparse(rows, { columns: OUT_COLS }), 'tcgplayer-import.csv');
