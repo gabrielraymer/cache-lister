@@ -9,10 +9,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.1.3] — 2026-05-18
+
+### Fixed
+- File upload now actually works — `$()` helper was calling `getElementById('#id')` with a leading `#` which always returns null, silently crashing every UI update after a file was parsed. Files were being read correctly the whole time; the crash just prevented any visible feedback.
+
+---
+
 ## [1.1.2] — 2026-05-18
 
 ### Fixed
-- Drag and drop now works in Chrome on Windows — added `dragenter` prevention (Chrome requires this before it allows `drop` to fire) and window-level guards to stop Chrome from navigating to the file
+- Added `dragenter` prevention and window-level drop guard (belt-and-suspenders for Chrome drag-and-drop)
+- Switched "Click to browse" from `input.click()` to native `<label for>` association
 
 ---
 
