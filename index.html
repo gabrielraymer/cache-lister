@@ -1512,13 +1512,6 @@
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
-    const OUT_COLS = [
-      'TCGplayer Id', 'Product Line', 'Set Name', 'Product Name', 'Title',
-      'Number', 'Rarity', 'Condition', 'TCG Market Price', 'TCG Direct Low',
-      'TCG Low Price With Shipping', 'TCG Low Price', 'Total Quantity',
-      'Add to Quantity', 'TCG Marketplace Price', 'Photo URL',
-    ];
-
     function dlOutput() {
       const { deduped } = S.matchResults;
       if (!deduped.length) { dlFile('', 'tcgplayer-import.csv'); return; }
@@ -1531,7 +1524,7 @@
         return r;
       });
 
-      dlFile(Papa.unparse(rows, { columns: OUT_COLS }), 'tcgplayer-import.csv');
+      dlFile(Papa.unparse(rows, { columns: S.catalogHeaders }), 'tcgplayer-import.csv');
     }
 
     function dlUnmatched() {
