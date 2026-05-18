@@ -7,7 +7,7 @@
 
 ## Use it now
 
-**[tools.goblincachetcg.com/cache-lister](https://tools.goblincachetcg.com/cache-lister)**
+**[cache-lister.goblincachetcg.com](https://cache-lister.goblincachetcg.com)**
 
 No installs, no accounts. Open the link and go.
 
@@ -27,8 +27,11 @@ Export this from TCGPlayer's **Pricing** tab using **"Export Filtered CSV"** or 
 
 Required columns (TCGPlayer provides these automatically):
 - `TCGplayer Id` — unique SKU per card + condition + foil variant
-- `Product Name`, `Set Name`, `Number`, `Condition`, `Printing`
-- `Market Price`, `Add to Quantity`
+- `Product Name`, `Set Name`, `Number`, `Condition`, `Add to Quantity`
+
+Optional columns (used when present, safely ignored when absent):
+- `Printing` — defaults to `Normal` if missing
+- `Market Price` — used as fallback listing price if your card list omits `Price`
 
 ### File 2 — Your Card List CSV
 
