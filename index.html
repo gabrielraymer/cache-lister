@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cache Lister — by GoblinCache TCG</title>
   <meta name="description" content="Turn your card list into a TCGPlayer import CSV. Upload two files, download one clean import. No installs, no accounts, no data leaves your browser.">
+  <link rel="icon" type="image/png" href="https://goblincachetcg.com/gctcg-badge.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -743,7 +744,7 @@
     // ── File 1 — TCGPlayer catalog ─────────────────────────────────────────
     const CAT_REQUIRED = [
       'TCGplayer Id','Product Name','Set Name','Number',
-      'Condition','Printing','Market Price','Add to Quantity',
+      'Condition','Add to Quantity',
     ];
 
     function onCatalogParsed(filename, res) {
@@ -1136,7 +1137,7 @@
           'Set Name':                r['Set Name'],
           'Number':                  r['Number'],
           'Condition':               r['Condition'],
-          'Printing':                r['Printing'],
+          'Printing':                r['Printing'] || 'Normal',
           'Market Price':            market,
           'TCG Marketplace Price':   m.price || market,
           'Add to Quantity':         m.quantity,
