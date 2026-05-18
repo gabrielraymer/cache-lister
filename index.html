@@ -1176,7 +1176,7 @@
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────
-    function $(id) { return document.getElementById(id); }
+    function $(id) { return document.getElementById(id.charAt(0) === '#' ? id.slice(1) : id); }
 
     function esc(s) {
       return String(s)
