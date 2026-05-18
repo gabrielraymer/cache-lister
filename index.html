@@ -1069,10 +1069,22 @@
         if (m) return { match: m, via: 'name+set+cond+print' };
       }
 
+      // Priority 3: Name + Condition + Printing, set-agnostic fallback for short codes.
+      // When the set is a short code (e.g. ECC, M21) that can't be resolved,
+      // accept a single unambiguous catalog entry for this card+cond+printing.
+      if (name) {
+        const codeOnly = normSet(row[cm.set] || '').replace(/\s/g, '');
+        if (codeOnly.length >= 2 && codeOnly.length <= 6) {
+          const k = `${name}||${cond}||${printing}`;
+          const all = idx.byNameCP.get(k) || [];
+          if (all.length === 1) return { match: all[0], via: 'name+cond+print (set-agnostic)' };
+        }
+      }
+
       const desc = rawName || rawNum || '(unknown)';
       return {
         match: null,
-        error: `No catalog match for "${desc}" — ${rawSet} / ${rawCond} / ${printing === 'Foil' ? 'Foil' : 'Non-foil'}`,
+        error: `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / ${printing === 'Foil' ? 'Foil' : 'Non-foil'}`,
       };
     }
 
