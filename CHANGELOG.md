@@ -9,6 +9,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.1.2] — 2026-05-18
+
+### Fixed
+- Drag and drop now works in Chrome on Windows — added `dragenter` prevention (Chrome requires this before it allows `drop` to fire) and window-level guards to stop Chrome from navigating to the file
+
+---
+
 ## [1.1.1] — 2026-05-18
 
 ### Fixed
