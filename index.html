@@ -757,17 +757,42 @@
     }
 
     // ── Condition mapping ──────────────────────────────────────────────────
+    // TCGPlayer official values: Near Mint / Lightly Played / Moderately Played /
+    //                            Heavily Played / Damaged
     const COND = {
-      nm:                 'Near Mint',
-      lp:                 'Lightly Played',
-      mp:                 'Moderately Played',
-      hp:                 'Heavily Played',
-      dmg:                'Damaged',
-      'near mint':        'Near Mint',
-      'lightly played':   'Lightly Played',
-      'moderately played':'Moderately Played',
-      'heavily played':   'Heavily Played',
-      'damaged':          'Damaged',
+      // Standard abbreviations
+      nm:                   'Near Mint',
+      lp:                   'Lightly Played',
+      mp:                   'Moderately Played',
+      hp:                   'Heavily Played',
+      dmg:                  'Damaged',
+      dm:                   'Damaged',     // common short form
+      // Mint variants (TCGPlayer treats Mint = Near Mint)
+      mint:                 'Near Mint',
+      m:                    'Near Mint',
+      // Slightly Played = Lightly Played
+      sp:                   'Lightly Played',
+      'slightly played':    'Lightly Played',
+      // Excellent / Very Good → Lightly Played (closest TCGPlayer equivalent)
+      ex:                   'Lightly Played',
+      exc:                  'Lightly Played',
+      excellent:            'Lightly Played',
+      vg:                   'Lightly Played',
+      'very good':          'Lightly Played',
+      // Good / Played → Moderately Played
+      gd:                   'Moderately Played',
+      good:                 'Moderately Played',
+      played:               'Moderately Played',
+      // Poor / Heavily Damaged → Damaged
+      po:                   'Damaged',
+      poor:                 'Damaged',
+      'heavily damaged':    'Damaged',
+      // Full names
+      'near mint':          'Near Mint',
+      'lightly played':     'Lightly Played',
+      'moderately played':  'Moderately Played',
+      'heavily played':     'Heavily Played',
+      'damaged':            'Damaged',
     };
 
     function mapCond(v) {
