@@ -1249,12 +1249,32 @@
       const mergedDups = matched.length - deduped.length;
       const total      = sellerList.length;
 
-      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, total };
-      showResults(deduped, pendingReview, unmatched, mergedDups, total);
+      // Build set resolution diagnostics
+      const setResolution = [];
+      if (cm.set) {
+        const seen = new Set();
+        for (const row of sellerList) {
+          const raw = (row[cm.set] || '').trim();
+          if (!raw || seen.has(raw)) continue;
+          seen.add(raw);
+          const resolved  = resolveSetCode(raw, setsMap, catalogSetIndex);
+          const inCatalog = idx.bySets.has(normSet(resolved));
+          setResolution.push({ raw, resolved, inCatalog });
+        }
+        setResolution.sort((a, b) => Number(a.inCatalog) - Number(b.inCatalog) || a.raw.localeCompare(b.raw));
+      }
+      const catalogSets = [...idx.bySets].map(s => {
+        // recover original casing from catalog rows
+        const row = catalog.find(r => normSet(r['Set Name']) === s);
+        return row ? (row['Set Name'] || s) : s;
+      }).sort((a, b) => a.localeCompare(b));
+
+      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets };
+      showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets);
     }
 
     // ── Results UI ─────────────────────────────────────────────────────────
-    function showResults(deduped, pendingReview, unmatched, mergedDups, total) {
+    function showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution = [], catalogSets = []) {
       const el = $('#results');
       el.classList.remove('hidden');
 
@@ -1402,7 +1422,49 @@
         </div>
         ${reviewHtml}
         ${unmatchedTableHtml}
+        ${buildSetMappingHtml(setResolution, catalogSets)}
       `;
+    }
+
+    function buildSetMappingHtml(setResolution, catalogSets) {
+      if (!setResolution.length && !catalogSets.length) return '';
+
+      const resRows = setResolution.map(s => {
+        const resolved  = s.resolved !== s.raw ? esc(s.resolved) : '<span style="color:var(--text-muted)">— not resolved —</span>';
+        const status    = s.inCatalog
+          ? '<span style="color:var(--success)">✓ found</span>'
+          : '<span style="color:var(--error)">✕ not in catalog</span>';
+        return `<tr>
+          <td style="font-family:monospace;color:var(--text)">${esc(s.raw)}</td>
+          <td style="font-size:12px">${resolved}</td>
+          <td>${status}</td>
+        </tr>`;
+      }).join('');
+
+      const catList = catalogSets.map(s =>
+        `<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--text-secondary);margin:2px 3px 2px 0">${esc(s)}</span>`
+      ).join('');
+
+      return `
+        <div class="unmatched-section" style="margin-top:28px;">
+          <details>
+            <summary style="cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;margin-bottom:12px;user-select:none;">
+              <span class="section-label" style="margin:0;">Set Mapping Diagnostics</span>
+              <span style="font-size:11px;color:var(--text-muted)">(click to expand)</span>
+            </summary>
+
+            <div class="section-label" style="margin-bottom:6px;">Your Set Codes → Resolution</div>
+            <div class="table-wrap" style="margin-bottom:18px;">
+              <table>
+                <thead><tr><th>Your Code</th><th>Resolved To</th><th>Status</th></tr></thead>
+                <tbody>${resRows}</tbody>
+              </table>
+            </div>
+
+            <div class="section-label" style="margin-bottom:6px;">Set Names in Your TCGPlayer Catalog</div>
+            <div style="line-height:2">${catList}</div>
+          </details>
+        </div>`;
     }
 
     // ── Review actions ──────────────────────────────────────────────────────
@@ -1444,8 +1506,8 @@
     }
 
     function rerenderResults() {
-      const { deduped, pendingReview, unmatched, mergedDups, total } = S.matchResults;
-      showResults(deduped, pendingReview, unmatched, mergedDups, total);
+      const { deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets } = S.matchResults;
+      showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets);
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
