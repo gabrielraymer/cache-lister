@@ -15,7 +15,7 @@ No installs, no accounts. Open the link and go.
 
 ## What it does
 
-Cache Lister takes two CSV files — your TCGPlayer catalog export and a simple card list you make yourself — and produces a clean, ready-to-import TCGPlayer upload CSV. It matches each card by collector number + set + condition + foil status, handles condition abbreviations (NM/LP/MP/HP/DMG), fuzzy set name matching, and merges duplicate entries. Everything runs entirely in your browser; your files never touch a server.
+Cache Lister takes two CSV files — your TCGPlayer catalog export and a simple card list you make yourself — and produces a clean, ready-to-import TCGPlayer upload CSV. It matches each card by collector number + set + condition + foil status, handles condition abbreviations (NM/LP/MP/HP/DMG), resolves set codes to full set names automatically (including Scryfall lookup for MTG), flags uncertain matches for your review before download, and merges duplicate entries. Everything runs entirely in your browser; your files never touch a server.
 
 ---
 
@@ -41,18 +41,38 @@ A simple spreadsheet you create. Minimum required columns:
 |--------|-------|
 | `Name` | Card name. Case-insensitive, trimmed. |
 | `Number` | Collector number. Most reliable match key. |
-| `Set` | Set name. Fuzzy-matched against TCGPlayer's set names — "Foundations" matches "Magic: The Gathering Foundations". |
-| `Condition` | Accepts `NM`, `LP`, `MP`, `HP`, `DMG` or full words. |
+| `Set` | Set name or code. Fuzzy-matched — short codes like `ECC` or `[CMD]` are resolved against Scryfall set data and your catalog automatically. |
+| `Condition` | `NM`, `LP`, `MP`, `HP`, `DMG`, `DM`, `SP`, `EX`, `VG` or full words. TCGPlayer combined values like `Near Mint Foil` also accepted. |
 | `Quantity` | Number of copies. |
 
 Optional columns:
 
 | Column | Notes |
 |--------|-------|
-| `Foil` | `yes`, `foil`, `true`, `1` = Foil. Absent or empty = Normal. |
+| `Foil` | `yes`, `foil`, `true`, `1` = Foil. Absent or empty = Normal. Foil is also detected automatically from `Near Mint Foil`-style condition values. |
 | `Price` | Your listing price. Falls back to TCGPlayer market price if omitted. |
 
 A sample file is included in this repo: [`SAMPLE_SELLER_LIST.csv`](SAMPLE_SELLER_LIST.csv)
+
+---
+
+## How matching works
+
+Cache Lister uses a four-priority matching strategy, from most to least confident:
+
+1. **Collector number + set + condition + foil** — exact match on all four. No review needed.
+2. **Collector number + name + condition + foil** — number and name agree. No review needed.
+3. **Name + set + condition + foil** — no collector number; card flagged for **review**.
+4. **Name + condition + foil, set-agnostic** — short set code (2–6 chars) with a single possible match in the catalog; flagged for **review**.
+
+Cards requiring review appear in a **Review Queue** before download. You can approve each match, skip it (sends to unmatched), or approve all at once. Unmatched cards are shown with per-field diagnostics (set code, card name, condition — green = found, red = not found) and can be downloaded as a separate CSV.
+
+Set codes in your seller list are resolved automatically:
+1. Scryfall lookup (e.g. `cmd` → `Commander 2011`)
+2. Catalog initialism matching (e.g. `ECC` → first catalog set whose initials match)
+3. Passes through unchanged if unresolvable
+
+The **Set Mapping Diagnostics** section (collapsible, shown after running) shows exactly how each of your set codes resolved and whether it was found in your catalog.
 
 ---
 
