@@ -915,7 +915,15 @@
       // UI
       const el = $('#f1-info');
       el.className = '';
-      el.innerHTML = fileInfoHtml(filename, res.data.length, () => resetFile(1));
+      const uniqueSetNames = [...new Set(res.data.map(r => r['Set Name']).filter(Boolean))].sort();
+      const setNamePills = uniqueSetNames.slice(0, 20).map(s =>
+        `<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 7px;font-size:11px;color:var(--text-secondary);margin:2px 3px 2px 0;font-family:monospace">${esc(s)}</span>`
+      ).join('') + (uniqueSetNames.length > 20 ? `<span style="font-size:11px;color:var(--text-muted)"> +${uniqueSetNames.length - 20} more</span>` : '');
+      el.innerHTML = fileInfoHtml(filename, res.data.length, () => resetFile(1)) +
+        `<div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:5px">Set names found in catalog (${uniqueSetNames.length} unique):</div>
+          <div style="line-height:2">${setNamePills || '<span style="font-size:11px;color:var(--error)">None detected — check column name "Set Name"</span>'}</div>
+        </div>`;
       $('#dz1').classList.add('hidden');
       setBadge('s1-badge', res.data.length.toLocaleString() + ' rows', true);
       $('#step1').classList.add('done');
