@@ -395,13 +395,9 @@
     /* ── Results ─────────────────────────────────────── */
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
       gap: 10px;
       margin-bottom: 20px;
-    }
-
-    @media (max-width: 560px) {
-      .results-grid { grid-template-columns: repeat(2, 1fr); }
     }
 
     .rcard {
@@ -504,6 +500,39 @@
       background: rgba(239, 68, 68, 0.15);
       color: #fca5a5;
       border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge.warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* ── Review section ──────────────────────────────── */
+    .review-section { margin-top: 22px; }
+
+    .review-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .review-header-left { display: flex; flex-direction: column; gap: 4px; }
+
+    .review-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      max-width: 460px;
+      line-height: 1.4;
+    }
+
+    .review-arrow {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 0 6px;
     }
 
     /* ── Footer ──────────────────────────────────────── */
@@ -1047,37 +1076,35 @@
         return { match: null, error: `Unknown condition "${rawCond}" — use NM, LP, MP, HP, or DMG` };
       }
 
-      // Priority 1: Number + Set + Condition + Printing
+      // Priority 1: Number + Set + Condition + Printing (collector number confirms printing)
       if (num) {
         const k = `${num}||${cond}||${printing}`;
         const m = bestSetMatch(idx.byNumCP.get(k), rawSet);
-        if (m) return { match: m, via: 'number+set+cond+print' };
+        if (m) return { match: m, via: 'number+set+cond+print', needsReview: false };
       }
 
-      // Priority 1b: Number + Name + Condition + Printing (set code didn't match, verify by name)
+      // Priority 1b: Number + Name + Condition + Printing
       if (num && name) {
         const k = `${num}||${cond}||${printing}`;
         const candidates = idx.byNumCP.get(k) || [];
         const m = candidates.find(r => normName(r['Product Name']) === name);
-        if (m) return { match: m, via: 'number+name+cond+print' };
+        if (m) return { match: m, via: 'number+name+cond+print', needsReview: false };
       }
 
-      // Priority 2: Name + Set + Condition + Printing
+      // Priority 2: Name + Set + Condition + Printing (no number — needs user review)
       if (name) {
         const k = `${name}||${cond}||${printing}`;
         const m = bestSetMatch(idx.byNameCP.get(k), rawSet);
-        if (m) return { match: m, via: 'name+set+cond+print' };
+        if (m) return { match: m, via: 'name+set+cond+print', needsReview: true };
       }
 
-      // Priority 3: Name + Condition + Printing, set-agnostic fallback for short codes.
-      // When the set is a short code (e.g. ECC, M21) that can't be resolved,
-      // accept a single unambiguous catalog entry for this card+cond+printing.
+      // Priority 3: Name + Condition + Printing, set-agnostic for short codes (needs review)
       if (name) {
         const codeOnly = normSet(row[cm.set] || '').replace(/\s/g, '');
         if (codeOnly.length >= 2 && codeOnly.length <= 6) {
           const k = `${name}||${cond}||${printing}`;
           const all = idx.byNameCP.get(k) || [];
-          if (all.length === 1) return { match: all[0], via: 'name+cond+print (set-agnostic)' };
+          if (all.length === 1) return { match: all[0], via: 'name+cond+print (set-agnostic)', needsReview: true };
         }
       }
 
@@ -1106,8 +1133,9 @@
       const setsMap = await scryfallSetsPromise;
       const catalogSetIndex = buildCatalogSetIndex(catalog);
 
-      const matched   = []; // { catalogRow, quantity, price }
-      const unmatched = []; // { row, error }
+      const matched       = []; // confirmed matches (have collector number)
+      const pendingReview = []; // { catalogRow, quantity, price, sellerRow, via }
+      const unmatched     = []; // { row, error }
 
       for (const row of sellerList) {
         const rawQty = (cm.quantity ? row[cm.quantity] : '') || '0';
@@ -1118,13 +1146,17 @@
 
         const r = matchRow(row, cm, idx, setsMap, catalogSetIndex);
         if (r.match) {
-          matched.push({ catalogRow: r.match, quantity: qty, price });
+          if (r.needsReview) {
+            pendingReview.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, via: r.via });
+          } else {
+            matched.push({ catalogRow: r.match, quantity: qty, price });
+          }
         } else {
           unmatched.push({ row, error: r.error });
         }
       }
 
-      // Dedup by TCGplayer Id — sum quantities, keep first price
+      // Dedup confirmed matches by TCGplayer Id — sum quantities, keep first price
       const byId = new Map();
       for (const m of matched) {
         const id = m.catalogRow['TCGplayer Id'];
@@ -1137,31 +1169,87 @@
 
       const deduped    = [...byId.values()];
       const mergedDups = matched.length - deduped.length;
+      const total      = sellerList.length;
 
-      S.matchResults = { deduped, unmatched };
-      showResults(deduped, unmatched, mergedDups, sellerList.length);
+      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, total };
+      showResults(deduped, pendingReview, unmatched, mergedDups, total);
     }
 
     // ── Results UI ─────────────────────────────────────────────────────────
-    function showResults(deduped, unmatched, mergedDups, total) {
+    function showResults(deduped, pendingReview, unmatched, mergedDups, total) {
       const el = $('#results');
       el.classList.remove('hidden');
 
-      setBadge('s3-badge', deduped.length + ' matched', true);
-
+      const hasPending   = pendingReview.length > 0;
       const hasUnmatched = unmatched.length > 0;
-      const unmatchedBtnHtml = hasUnmatched
-        ? `<button class="btn btn-ghost" onclick="dlUnmatched()">Download Unmatched CSV</button>`
-        : '';
+      const allDone      = !hasPending;
 
+      setBadge('s3-badge', deduped.length + (hasPending ? '+' + pendingReview.length + '?' : '') + ' matched', true);
+
+      // ── Review section ──
+      let reviewHtml = '';
+      if (hasPending) {
+        const cm = S.colMap;
+        const reviewRows = pendingReview.map((item, i) => {
+          const sName = cm.name      ? (item.sellerRow[cm.name]      || '—') : '—';
+          const sSet  = cm.set       ? (item.sellerRow[cm.set]       || '—') : '—';
+          const sCond = cm.condition ? (item.sellerRow[cm.condition] || '—') : '—';
+          const sQty  = cm.quantity  ? (item.sellerRow[cm.quantity]  || '—') : '—';
+          const cName = item.catalogRow['Product Name'] || '—';
+          const cSet  = item.catalogRow['Set Name']     || '—';
+          const cNum  = item.catalogRow['Number']       || '—';
+          return `<tr>
+            <td>${esc(sName)}</td>
+            <td style="color:var(--text-muted)">${esc(sSet)}</td>
+            <td>${esc(sCond)}</td>
+            <td>${esc(sQty)}</td>
+            <td class="review-arrow">→</td>
+            <td style="color:var(--success)">${esc(cName)}</td>
+            <td style="color:var(--text-muted);font-size:11px">${esc(cSet)}</td>
+            <td style="color:var(--text-muted)">${esc(cNum)}</td>
+            <td>
+              <div style="display:flex;gap:5px;">
+                <button class="btn btn-primary" style="padding:3px 10px;font-size:11px;" onclick="approveReview(${i})">✓</button>
+                <button class="btn btn-ghost"   style="padding:3px 9px;font-size:11px;"  onclick="rejectReview(${i})">✕</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+
+        reviewHtml = `
+          <div class="review-section">
+            <div class="review-header">
+              <div class="review-header-left">
+                <div class="section-label" style="margin:0;">
+                  Needs Review &nbsp;<span class="badge warn">${pendingReview.length}</span>
+                </div>
+                <div class="review-hint">Matched by name — no collector number to confirm the printing. Approve or skip each row.</div>
+              </div>
+              <button class="btn btn-primary" style="font-size:12px;padding:6px 14px;" onclick="approveAll()">✓ Approve All</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>Your Card</th><th>Your Set</th><th>Cond</th><th>Qty</th>
+                  <th></th>
+                  <th>Matched As</th><th>Catalog Set</th><th>#</th>
+                  <th></th>
+                </tr></thead>
+                <tbody>${reviewRows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+
+      // ── Unmatched section ──
       let unmatchedTableHtml = '';
       if (hasUnmatched) {
         const cm = S.colMap;
         const rows = unmatched.map(u => {
-          const name = cm.name ? (u.row[cm.name] || '—') : '—';
-          const set  = cm.set  ? (u.row[cm.set]  || '—') : '—';
+          const name = cm.name      ? (u.row[cm.name]      || '—') : '—';
+          const set  = cm.set       ? (u.row[cm.set]       || '—') : '—';
           const cond = cm.condition ? (u.row[cm.condition] || '—') : '—';
-          const foil = cm.foil ? (u.row[cm.foil] || '—') : '—';
+          const foil = cm.foil      ? (u.row[cm.foil]      || '—') : '—';
           return `<tr>
             <td>${esc(name)}</td>
             <td>${esc(set)}</td>
@@ -1183,9 +1271,7 @@
             </div>
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr><th>Name</th><th>Set</th><th>Condition</th><th>Foil</th><th>Reason</th></tr>
-                </thead>
+                <thead><tr><th>Name</th><th>Set</th><th>Condition</th><th>Foil</th><th>Reason</th></tr></thead>
                 <tbody>${rows}</tbody>
               </table>
             </div>
@@ -1202,6 +1288,11 @@
             <div class="rcard-val">${deduped.length}</div>
             <div class="rcard-label">Matched</div>
           </div>
+          ${hasPending ? `
+          <div class="rcard warn">
+            <div class="rcard-val">${pendingReview.length}</div>
+            <div class="rcard-label">Needs Review</div>
+          </div>` : ''}
           <div class="rcard ${hasUnmatched ? 'warn' : 'good'}">
             <div class="rcard-val">${unmatched.length}</div>
             <div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div>
@@ -1212,11 +1303,55 @@
           </div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-primary" onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
+          <button class="btn btn-primary" ${hasPending ? 'disabled title="Finish reviewing before downloading"' : ''} onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
           <button class="btn btn-ghost" onclick="resetAll()" style="margin-left:auto;">↩ Start Over</button>
         </div>
+        ${reviewHtml}
         ${unmatchedTableHtml}
       `;
+    }
+
+    // ── Review actions ──────────────────────────────────────────────────────
+    function approveReview(i) {
+      const { pendingReview, deduped } = S.matchResults;
+      const item = pendingReview.splice(i, 1)[0];
+      const id = item.catalogRow['TCGplayer Id'];
+      const existing = deduped.find(d => d.catalogRow['TCGplayer Id'] === id);
+      if (existing) {
+        existing.quantity += item.quantity;
+        S.matchResults.mergedDups++;
+      } else {
+        deduped.push(item);
+      }
+      rerenderResults();
+    }
+
+    function rejectReview(i) {
+      const { pendingReview, unmatched } = S.matchResults;
+      const item = pendingReview.splice(i, 1)[0];
+      unmatched.push({ row: item.sellerRow, error: 'Skipped during review' });
+      rerenderResults();
+    }
+
+    function approveAll() {
+      const { pendingReview, deduped } = S.matchResults;
+      for (const item of pendingReview) {
+        const id = item.catalogRow['TCGplayer Id'];
+        const existing = deduped.find(d => d.catalogRow['TCGplayer Id'] === id);
+        if (existing) {
+          existing.quantity += item.quantity;
+          S.matchResults.mergedDups++;
+        } else {
+          deduped.push({ ...item });
+        }
+      }
+      S.matchResults.pendingReview = [];
+      rerenderResults();
+    }
+
+    function rerenderResults() {
+      const { deduped, pendingReview, unmatched, mergedDups, total } = S.matchResults;
+      showResults(deduped, pendingReview, unmatched, mergedDups, total);
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
