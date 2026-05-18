@@ -565,6 +565,15 @@
       gap: 5px;
     }
 
+    /* ── Floating Start Over ────────────────────────── */
+    .btn-float-reset {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
+
     /* ── Utility ─────────────────────────────────────── */
     .hidden { display: none !important; }
     .mt-12 { margin-top: 12px; }
@@ -1389,7 +1398,7 @@
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" ${hasPending ? 'disabled title="Finish reviewing before downloading"' : ''} onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
-          <button class="btn btn-ghost" onclick="resetAll()" style="margin-left:auto;">↩ Start Over</button>
+          <button class="btn btn-ghost btn-float-reset" onclick="resetAll()">↩ Start Over</button>
         </div>
         ${reviewHtml}
         ${unmatchedTableHtml}
