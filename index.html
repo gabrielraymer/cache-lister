@@ -691,10 +691,40 @@
       }
     })();
 
-    function resolveSetCode(rawSet, setsMap) {
-      if (!rawSet || !setsMap || !setsMap.size) return rawSet;
+    // Build initialism → [set name, ...] index from the catalog's own set names.
+    // Used as a fallback so codes like ECC resolve to "Eternal Card Collection"
+    // using the exact name TCGPlayer puts in the catalog — no external API needed.
+    function buildCatalogSetIndex(catalog) {
+      const seen = new Map(); // initials → [fullName, ...]
+      for (const row of catalog) {
+        const name = (row['Set Name'] || '').trim();
+        if (!name) continue;
+        const initials = normSet(name).split(' ').filter(Boolean).map(w => w[0]).join('');
+        if (!initials) continue;
+        if (!seen.has(initials)) seen.set(initials, []);
+        const arr = seen.get(initials);
+        if (!arr.includes(name)) arr.push(name);
+      }
+      return seen; // Map<initials, [fullName, ...]>
+    }
+
+    function resolveSetCode(rawSet, setsMap, catalogSetIndex) {
+      if (!rawSet) return rawSet;
       const code = String(rawSet).trim().replace(/^\[|\]$/g, '').toLowerCase();
-      return setsMap.get(code) || rawSet;
+
+      // 1. Try Scryfall code → full name, then see if the catalog knows that name too
+      if (setsMap && setsMap.size) {
+        const scryfallName = setsMap.get(code);
+        if (scryfallName) return scryfallName;
+      }
+
+      // 2. Try initialism match against the catalog's own set names (unique match only)
+      if (catalogSetIndex) {
+        const matches = catalogSetIndex.get(code);
+        if (matches && matches.length === 1) return matches[0];
+      }
+
+      return rawSet;
     }
 
     // ── Condition mapping ──────────────────────────────────────────────────
@@ -1001,10 +1031,10 @@
       return null;
     }
 
-    function matchRow(row, cm, idx, setsMap) {
+    function matchRow(row, cm, idx, setsMap, catalogSetIndex) {
       const rawName  = row[cm.name]      || '';
       const rawNum   = cm.number ? (row[cm.number] || '') : '';
-      const rawSet   = resolveSetCode(row[cm.set] || '', setsMap);
+      const rawSet   = resolveSetCode(row[cm.set] || '', setsMap, catalogSetIndex);
       const rawCond  = row[cm.condition] || '';
       const rawFoil  = cm.foil ? (row[cm.foil] || '') : '';
 
@@ -1062,6 +1092,7 @@
       const { catalog, sellerList, colMap: cm } = S;
       const idx = buildIndex(catalog);
       const setsMap = await scryfallSetsPromise;
+      const catalogSetIndex = buildCatalogSetIndex(catalog);
 
       const matched   = []; // { catalogRow, quantity, price }
       const unmatched = []; // { row, error }
@@ -1073,7 +1104,7 @@
 
         if (qty <= 0) continue;
 
-        const r = matchRow(row, cm, idx, setsMap);
+        const r = matchRow(row, cm, idx, setsMap, catalogSetIndex);
         if (r.match) {
           matched.push({ catalogRow: r.match, quantity: qty, price });
         } else {
