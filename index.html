@@ -910,6 +910,7 @@
       }
 
       S.catalog = res.data;
+      S.catalogHeaders = res.meta.fields || [];
 
       // UI
       const el = $('#f1-info');
@@ -1511,31 +1512,22 @@
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
-    // Column order must exactly match the TCGPlayer pricing import format
-    const OUT_COLS = [
-      'TCGplayer Id','Product Name','Set Name','Number',
-      'Condition','Printing','TCG Market Price','TCG Marketplace Price','Add to Quantity',
-    ];
-
     function dlOutput() {
       const { deduped } = S.matchResults;
+      if (!deduped.length) { dlFile('', 'tcgplayer-import.csv'); return; }
+
+      // Use the catalog's own column headers so the output matches the export exactly
+      const catalogCols = S.catalogHeaders;
+
       const rows = deduped.map(m => {
-        const r = m.catalogRow;
-        const marketPrice      = r['TCG Market Price'] || r['Market Price'] || '';
-        const marketplacePrice = m.price || marketPrice; // fall back to market price if seller left it blank
-        return {
-          'TCGplayer Id':          r['TCGplayer Id'],
-          'Product Name':          r['Product Name'],
-          'Set Name':              r['Set Name'],
-          'Number':                r['Number'],
-          'Condition':             r['Condition'],
-          'Printing':              r['Printing'] || 'Normal',
-          'TCG Market Price':      marketPrice,
-          'TCG Marketplace Price': marketplacePrice,
-          'Add to Quantity':       m.quantity,
-        };
+        const r = { ...m.catalogRow };
+        const marketPrice = r['TCG Market Price'] || r['Market Price'] || '';
+        r['Add to Quantity']       = m.quantity;
+        r['TCG Marketplace Price'] = m.price || marketPrice;
+        return r;
       });
-      dlFile(Papa.unparse(rows, { columns: OUT_COLS }), 'tcgplayer-import.csv');
+
+      dlFile(Papa.unparse(rows, { columns: catalogCols }), 'tcgplayer-import.csv');
     }
 
     function dlUnmatched() {
