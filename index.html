@@ -890,6 +890,11 @@
       `;
     }
 
+    function resetAll() {
+      resetFile(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function resetFile(n) {
       if (n === 1) {
         S.catalog = null;
@@ -1126,6 +1131,7 @@
         <div class="btn-row">
           <button class="btn btn-primary" onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
           ${unmatchedBtnHtml}
+          <button class="btn btn-ghost" onclick="resetAll()" style="margin-left:auto;">↩ Start Over</button>
         </div>
         ${unmatchedTableHtml}
       `;
