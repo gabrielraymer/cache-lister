@@ -1190,6 +1190,24 @@
         }
       }
 
+      // Priority 4: Foil fallback — foil card but catalog only has non-foil rows.
+      // Re-run P1/P2 with Normal printing, clone the row with a foil condition so TCGPlayer
+      // receives the correct condition string in the import CSV.
+      if (printing === 'Foil') {
+        const foilCond = cond + ' Foil'; // e.g. "Near Mint Foil"
+        let base = null;
+        if (num) {
+          base = bestSetMatch(idx.byNumCP.get(`${num}||${cond}||Normal`), rawSet);
+        }
+        if (!base && name) {
+          base = bestSetMatch(idx.byNameCP.get(`${name}||${cond}||Normal`), rawSet);
+        }
+        if (base) {
+          const foilRow = { ...base, Condition: foilCond };
+          return { match: foilRow, via: 'foil fallback (non-foil catalog row)', needsReview: true };
+        }
+      }
+
       const desc = rawName || rawNum || '(unknown)';
       return {
         match: null,
