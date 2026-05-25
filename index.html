@@ -1343,7 +1343,9 @@
 
       const deduped    = [...byId.values()];
       const mergedDups = matched.length - deduped.length;
-      const total      = sellerList.length;
+      // Exclude qty=0 rows (skipped) so the displayed numbers always sum correctly:
+      // Seller rows = Matched + Needs Review + Unmatched (+ dupes merged back into Matched)
+      const total = matched.length + pendingReview.length + unmatched.length;
 
       // Build set resolution diagnostics
       const setResolution = [];
