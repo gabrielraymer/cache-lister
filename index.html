@@ -1103,6 +1103,7 @@
         S.catalog = null;
         $('#f1-info').innerHTML = '';
         $('#f1-info').className = 'hidden';
+        restoreDropZone(1);
         $('#dz1').classList.remove('hidden');
         clearErr(1);
         setBadge('s1-badge', 'Required', false);
@@ -1116,6 +1117,7 @@
         S.matchResults = null;
         $('#f2-info').innerHTML = '';
         $('#f2-info').className = 'hidden';
+        restoreDropZone(2);
         $('#dz2').classList.remove('hidden');
         clearPreview();
         clearErr(2);
