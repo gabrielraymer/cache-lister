@@ -1521,8 +1521,19 @@
 
     // ── Downloads ──────────────────────────────────────────────────────────
     function dlOutput() {
-      const { deduped } = S.matchResults;
-      if (!deduped.length) { dlFile('', 'tcgplayer-import.csv'); return; }
+      const { deduped, setResolution } = S.matchResults;
+
+      const today = new Date();
+      const yyyymmdd = today.getFullYear().toString()
+        + String(today.getMonth() + 1).padStart(2, '0')
+        + String(today.getDate()).padStart(2, '0');
+      const codes = [...new Set(
+        (setResolution || []).map(s => s.raw.replace(/^\[|\]$/g, '').trim().toUpperCase()).filter(Boolean)
+      )];
+      const setSlug = codes.length === 0 ? '' : codes.length <= 2 ? '-' + codes.join('-') : '-MULTI';
+      const filename = `tcgplayer-import${setSlug}-${yyyymmdd}.csv`;
+
+      if (!deduped.length) { dlFile('', filename); return; }
 
       const rows = deduped.map(m => {
         const r = { ...m.catalogRow };
@@ -1532,7 +1543,7 @@
         return r;
       });
 
-      dlFile(Papa.unparse(rows, { columns: S.catalogHeaders }), 'tcgplayer-import.csv');
+      dlFile(Papa.unparse(rows, { columns: S.catalogHeaders }), filename);
     }
 
     function dlUnmatched() {
