@@ -1248,25 +1248,29 @@
         }
       }
 
-      // Priority 4: Foil fallback — foil card but catalog only has non-foil rows.
-      // Re-run P1/P2 with Normal printing, clone the row with a foil condition so TCGPlayer
-      // receives the correct condition string in the import CSV.
+      const desc = rawName || rawNum || '(unknown)';
+
+      // Foil cards with no foil row in the catalog: give a specific, actionable error.
+      // Do NOT fall back to the non-foil product ID — TCGPlayer validates condition vs product
+      // type and will reject the import with "does not match product details".
       if (printing === 'Foil') {
-        const foilCond = cond + ' Foil'; // e.g. "Near Mint Foil"
-        let base = null;
-        if (num) {
-          base = bestSetMatch(idx.byNumCP.get(`${num}||${cond}||Normal`), rawSet);
-        }
-        if (!base && name) {
-          base = bestSetMatch(idx.byNameCP.get(`${name}||${cond}||Normal`), rawSet);
-        }
-        if (base) {
-          const foilRow = { ...base, Condition: foilCond };
-          return { match: foilRow, via: 'foil fallback (non-foil catalog row)', needsReview: true };
-        }
+        const hasNonFoilInCatalog = !!(
+          (num && idx.byNumCP.get(`${num}||${cond}||Normal`)) ||
+          (name && idx.byNameCP.get(`${name}||${cond}||Normal`))
+        );
+        return {
+          match: null,
+          checks: {
+            condition: { ok: true, label: cond },
+            name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
+            set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
+          },
+          error: hasNonFoilInCatalog
+            ? `Foil version not in catalog for "${desc}" — your catalog has the non-foil product but not the foil. Re-export your TCGPlayer catalog and enable "Show foil products" to include foil variants.`
+            : `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / Foil`,
+        };
       }
 
-      const desc = rawName || rawNum || '(unknown)';
       return {
         match: null,
         checks: {
@@ -1274,7 +1278,7 @@
           name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
           set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
         },
-        error: `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / ${printing === 'Foil' ? 'Foil' : 'Non-foil'}`,
+        error: `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / Non-foil`,
       };
     }
 
