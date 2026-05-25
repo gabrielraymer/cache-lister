@@ -1137,9 +1137,13 @@
       const bySets   = new Set(); // all normalized set names (for existence check)
 
       for (const row of rows) {
-        const num   = normNum(row['Number']);
-        const cond  = (row['Condition'] || '').trim();
-        const print = (row['Printing']  || 'Normal').trim();
+        const num     = normNum(row['Number']);
+        const rawCond = (row['Condition'] || '').trim();
+        // TCGPlayer bakes foil into the condition string ("Near Mint Foil").
+        // Normalize the same way matchRow does so lookup keys align.
+        const hasFoilCond = condHasFoil(rawCond);
+        const cond  = hasFoilCond ? (mapCond(rawCond) || rawCond) : rawCond;
+        const print = hasFoilCond ? 'Foil' : (row['Printing'] || 'Normal').trim();
         const name  = normName(row['Product Name']);
         const set   = normSet(row['Set Name']);
 
