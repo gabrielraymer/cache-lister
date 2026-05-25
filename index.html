@@ -1215,6 +1215,7 @@
     }
 
     async function doMatch() {
+      await new Promise(r => setTimeout(r, 0)); // yield to let spinner render
       const { catalog, sellerList, colMap: cm } = S;
       const idx = buildIndex(catalog);
       const setsMap = await scryfallSetsPromise;
