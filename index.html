@@ -1633,7 +1633,7 @@
       const codes = [...new Set(
         (setResolution || []).map(s => s.raw.replace(/^\[|\]$/g, '').trim().toUpperCase()).filter(Boolean)
       )];
-      const setSlug = codes.length === 0 ? '' : codes.length <= 2 ? '-' + codes.join('-') : '-MULTI';
+      const setSlug = codes.length === 0 ? '' : codes.length <= 3 ? '-' + codes.join('-') : '-MULTI';
       const filename = `tcgplayer-import${setSlug}-${yyyymmdd}.csv`;
 
       if (!deduped.length) { dlFile('', filename); return; }
