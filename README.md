@@ -17,6 +17,10 @@ No installs, no accounts. Open the link and go.
 
 Cache Lister takes two CSV files — your TCGPlayer catalog export and a simple card list you make yourself — and produces a clean, ready-to-import TCGPlayer upload CSV. It matches each card by collector number + set + condition + foil status, handles condition abbreviations (NM/LP/MP/HP/DMG), resolves set codes to full set names automatically (including Scryfall lookup for MTG), flags uncertain matches for your review before download, and merges duplicate entries. Everything runs entirely in your browser; your files never touch a server.
 
+### Price Adjuster
+
+A built-in pricing tool (third tab, or go directly to [cache-lister.goblincachetcg.com/#price-adjuster](https://cache-lister.goblincachetcg.com/#price-adjuster)) that lets you reprice your matched inventory before export. After running a match, your results auto-populate the Price Adjuster. You can also paste any TCGPlayer catalog CSV directly into the tab without running a match first. Controls include a market adjustment slider (50%–150%), a floor price (default $0.25), an optional ceiling price, and psychological rounding options (none / $0.25 / $0.49 / $0.99). A live preview table shows every card's market price, new price, and dollar change. When you're happy with the numbers, export a TCGPlayer-compatible CSV — cards with TCGplayer IDs are exported as price-update rows (quantity 0); paste-only imports produce a clean summary CSV.
+
 ---
 
 ## The two input files

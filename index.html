@@ -103,7 +103,7 @@
 
     .hero {
       text-align: center;
-      margin-bottom: 44px;
+      margin-bottom: 32px;
     }
 
     .hero h1 {
@@ -124,6 +124,88 @@
       margin: 0 auto;
       line-height: 1.55;
     }
+
+    /* ── Tab Nav ─────────────────────────────────────── */
+    .tab-nav {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text-secondary);
+      background: var(--surface2);
+    }
+
+    .tab-btn.active {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border-active);
+    }
+
+    .tab-btn .tab-pip {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border-active);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .tab-btn.active .tab-pip,
+    .tab-btn.done .tab-pip {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .tab-btn.has-results .tab-pip {
+      background: var(--success);
+      border-color: var(--success);
+      color: #000;
+    }
+
+    @media (max-width: 520px) {
+      .tab-btn { font-size: 11px; padding: 9px 8px; }
+      .tab-label-full { display: none; }
+      .tab-label-short { display: inline; }
+    }
+    @media (min-width: 521px) {
+      .tab-label-full { display: inline; }
+      .tab-label-short { display: none; }
+    }
+
+    /* ── Tab Panels ──────────────────────────────────── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
     /* ── Step cards ──────────────────────────────────── */
     .step {
@@ -454,6 +536,13 @@
 
     .btn-ghost:hover { color: var(--text); border-color: var(--border-active); }
 
+    .btn-success {
+      background: #15803d;
+      color: #fff;
+    }
+    .btn-success:hover:not(:disabled) { background: #166534; }
+    .btn-success:disabled { opacity: 0.4; cursor: not-allowed; }
+
     .btn-row {
       display: flex;
       gap: 10px;
@@ -535,6 +624,333 @@
       padding: 0 6px;
     }
 
+    /* ── Empty state ─────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .empty-state-icon { font-size: 42px; margin-bottom: 16px; }
+
+    .empty-state h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      max-width: 360px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+
+    /* ── Price Adjuster ──────────────────────────────── */
+    .pa-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .pa-section-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pa-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .pa-section-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .pa-section-body {
+      padding: 18px 20px;
+    }
+
+    /* ── Metric cards ────────────────────────────────── */
+    .pa-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .pa-metric {
+      padding: 16px 18px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .pa-metric-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .pa-metric-val {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .pa-metric-val.neutral { color: var(--text); }
+    .pa-metric-val.positive { color: var(--success); }
+    .pa-metric-val.negative { color: var(--error); }
+    .pa-metric-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── Slider ──────────────────────────────────────── */
+    .pa-slider-wrap {
+      margin-bottom: 20px;
+    }
+
+    .pa-slider-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .pa-slider-label-left {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pa-slider-readout {
+      font-size: 14px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .pa-slider-readout.neutral { color: var(--text-secondary); }
+    .pa-slider-readout.positive { color: var(--success); border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.08); }
+    .pa-slider-readout.negative { color: var(--error); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+
+    input[type="range"].pa-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--border-active);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].pa-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+
+    input[type="range"].pa-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+
+    .pa-slider-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+    }
+
+    .pa-slider-tick {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ── Floor / Ceiling inputs ──────────────────────── */
+    .pa-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .pa-input-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .pa-input-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .pa-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .pa-input-prefix {
+      position: absolute;
+      left: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .pa-input {
+      width: 100%;
+      padding: 9px 12px 9px 22px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .pa-input:focus { border-color: var(--accent); }
+
+    .pa-input-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ── Rounding toggles ────────────────────────────── */
+    .pa-round-wrap { margin-bottom: 4px; }
+
+    .pa-round-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .pa-round-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .pa-round-btn {
+      padding: 7px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .pa-round-btn:hover { color: var(--text); border-color: var(--border-active); }
+    .pa-round-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── PA preview table ────────────────────────────── */
+    .pa-table-wrap {
+      overflow-x: auto;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .pa-table-wrap table { font-size: 12px; }
+
+    .pa-table-wrap thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .pa-change-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pa-change-badge.up {
+      background: rgba(34,197,94,0.12);
+      color: var(--success);
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+
+    .pa-change-badge.down {
+      background: rgba(239,68,68,0.12);
+      color: var(--error);
+      border: 1px solid rgba(239,68,68,0.25);
+    }
+
+    .pa-change-badge.flat {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .pa-totals-row td {
+      font-weight: 700;
+      color: var(--text) !important;
+      background: var(--surface2) !important;
+      border-top: 2px solid var(--border-active) !important;
+    }
+
+    /* ── Paste CSV ───────────────────────────────────── */
+    .pa-paste-area {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 12px;
+      font-family: monospace;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .pa-paste-area:focus { border-color: var(--accent); }
+
     /* ── Footer ──────────────────────────────────────── */
     footer {
       border-top: 1px solid var(--border);
@@ -610,82 +1026,279 @@
 
     <div class="hero">
       <h1>Turn your card list into a<br><span>TCGPlayer import</span></h1>
-      <p class="hero-sub">Upload your TCGPlayer catalog and a simple card list. Get one clean import CSV in seconds. No installs, no accounts — everything runs in your browser.</p>
+      <p class="hero-sub">Match your inventory, review results, and reprice — all in one place. Nothing leaves your browser.</p>
     </div>
 
-    <!-- ── Step 1 ── -->
-    <div class="step active" id="step1">
-      <div class="step-header">
-        <div class="step-num">1</div>
-        <div>
-          <div class="step-title">Upload TCGPlayer Catalog CSV</div>
-          <div class="step-subtitle">Export from TCGPlayer → Pricing tab → "Export Filtered CSV" or "Export from Live"</div>
-        </div>
-        <div class="step-badge" id="s1-badge">Required</div>
-      </div>
-      <div class="step-body">
-        <div class="drop-zone" id="dz1"
-             ondragenter="onDragOver(event,'dz1')"
-             ondragover="onDragOver(event,'dz1')"
-             ondragleave="onDragLeave('dz1')"
-             ondrop="onDrop(event,1)">
-          <input type="file" id="fi1" accept=".csv,text/csv" onchange="onFileInput(event,1)">
-          <div class="dz-icon">📋</div>
-          <div class="dz-text"><label for="fi1" class="browse-link">Click to browse</label> or drag &amp; drop</div>
-          <div class="dz-hint">TCGPlayer catalog CSV</div>
-        </div>
-        <div id="f1-info" class="hidden"></div>
-        <div id="f1-err"  class="hidden"></div>
-      </div>
+    <!-- ── Tab Nav ── -->
+    <div class="tab-nav" role="tablist">
+      <button class="tab-btn active" id="tab-btn-match" onclick="switchTab('match')" role="tab">
+        <span class="tab-pip">1</span>
+        <span class="tab-label-full">Step 1 — Match</span>
+        <span class="tab-label-short">Match</span>
+      </button>
+      <button class="tab-btn" id="tab-btn-review" onclick="switchTab('review')" role="tab">
+        <span class="tab-pip" id="review-pip">2</span>
+        <span class="tab-label-full">Step 2 — Review</span>
+        <span class="tab-label-short">Review</span>
+      </button>
+      <button class="tab-btn" id="tab-btn-price-adjuster" onclick="switchTab('price-adjuster')" role="tab">
+        <span class="tab-pip">✦</span>
+        <span class="tab-label-full">Price Adjuster</span>
+        <span class="tab-label-short">Prices</span>
+      </button>
     </div>
 
-    <!-- ── Step 2 ── -->
-    <div class="step disabled" id="step2">
-      <div class="step-header">
-        <div class="step-num">2</div>
-        <div>
-          <div class="step-title">Upload Your Card List</div>
-          <div class="step-subtitle">TCGPlayer, Manabox, Deckbox, MTG Arena, Moxfield, MTGO — .csv or .txt</div>
+    <!-- ── Tab 1: Match ── -->
+    <div id="tab-match" class="tab-panel active">
+
+      <!-- Step 1 -->
+      <div class="step active" id="step1">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Upload TCGPlayer Catalog CSV</div>
+            <div class="step-subtitle">Export from TCGPlayer → Pricing tab → "Export Filtered CSV" or "Export from Live"</div>
+          </div>
+          <div class="step-badge" id="s1-badge">Required</div>
         </div>
-        <div class="step-badge" id="s2-badge">Upload catalog first</div>
-      </div>
-      <div class="step-body">
-        <div class="drop-zone" id="dz2"
-             ondragenter="onDragOver(event,'dz2')"
-             ondragover="onDragOver(event,'dz2')"
-             ondragleave="onDragLeave('dz2')"
-             ondrop="onDrop(event,2)">
-          <input type="file" id="fi2" accept=".csv,.txt,text/csv,text/plain" onchange="onFileInput(event,2)">
-          <div class="dz-icon">📝</div>
-          <div class="dz-text"><label for="fi2" class="browse-link">Click to browse</label> or drag &amp; drop</div>
-          <div class="dz-hint">CSV or plain text — TCGPlayer, Manabox, Deckbox, Arena, Moxfield, MTGO</div>
+        <div class="step-body">
+          <div class="drop-zone" id="dz1"
+               ondragenter="onDragOver(event,'dz1')"
+               ondragover="onDragOver(event,'dz1')"
+               ondragleave="onDragLeave('dz1')"
+               ondrop="onDrop(event,1)">
+            <input type="file" id="fi1" accept=".csv,text/csv" onchange="onFileInput(event,1)">
+            <div class="dz-icon">📋</div>
+            <div class="dz-text"><label for="fi1" class="browse-link">Click to browse</label> or drag &amp; drop</div>
+            <div class="dz-hint">TCGPlayer catalog CSV</div>
+          </div>
+          <div id="f1-info" class="hidden"></div>
+          <div id="f1-err"  class="hidden"></div>
         </div>
-        <div id="f2-info"    class="hidden"></div>
-        <div id="f2-preview" class="hidden"></div>
-        <div id="f2-err"     class="hidden"></div>
       </div>
+
+      <!-- Step 2 -->
+      <div class="step disabled" id="step2">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Upload Your Card List</div>
+            <div class="step-subtitle">TCGPlayer, Manabox, Deckbox, MTG Arena, Moxfield, MTGO — .csv or .txt</div>
+          </div>
+          <div class="step-badge" id="s2-badge">Upload catalog first</div>
+        </div>
+        <div class="step-body">
+          <div class="drop-zone" id="dz2"
+               ondragenter="onDragOver(event,'dz2')"
+               ondragover="onDragOver(event,'dz2')"
+               ondragleave="onDragLeave('dz2')"
+               ondrop="onDrop(event,2)">
+            <input type="file" id="fi2" accept=".csv,.txt,text/csv,text/plain" onchange="onFileInput(event,2)">
+            <div class="dz-icon">📝</div>
+            <div class="dz-text"><label for="fi2" class="browse-link">Click to browse</label> or drag &amp; drop</div>
+            <div class="dz-hint">CSV or plain text — TCGPlayer, Manabox, Deckbox, Arena, Moxfield, MTGO</div>
+          </div>
+          <div id="f2-info"    class="hidden"></div>
+          <div id="f2-preview" class="hidden"></div>
+          <div id="f2-err"     class="hidden"></div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step disabled" id="step3">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Match &amp; Export</div>
+            <div class="step-subtitle">Run the matcher, then review results and download your ready-to-import CSV</div>
+          </div>
+          <div class="step-badge" id="s3-badge">Upload both files first</div>
+        </div>
+        <div class="step-body">
+          <div class="run-section">
+            <button class="btn btn-primary lg" id="run-btn" onclick="runMatcher()" disabled>
+              Run Cache Lister
+            </button>
+            <div class="run-hint">All processing happens locally — nothing is sent to any server.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-match -->
+
+    <!-- ── Tab 2: Review ── -->
+    <div id="tab-review" class="tab-panel">
+      <div id="review-empty-state" class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <h3>No match results yet</h3>
+        <p>Upload your TCGPlayer catalog and card list in Step 1 — Match, then run the matcher to see results here.</p>
+        <button class="btn btn-primary" onclick="switchTab('match')">Go to Step 1 — Match</button>
+      </div>
+      <div id="results" class="hidden"></div>
     </div>
 
-    <!-- ── Step 3 ── -->
-    <div class="step disabled" id="step3">
-      <div class="step-header">
-        <div class="step-num">3</div>
-        <div>
-          <div class="step-title">Match &amp; Export</div>
-          <div class="step-subtitle">Run the matcher, then download your ready-to-import CSV</div>
+    <!-- ── Tab 3: Price Adjuster ── -->
+    <div id="tab-price-adjuster" class="tab-panel">
+
+      <div id="pa-empty-state" class="empty-state">
+        <div class="empty-state-icon">💰</div>
+        <h3>No inventory loaded</h3>
+        <p>Run a match in Step 1 to auto-load your matched inventory here, or paste a CSV below to use the Price Adjuster standalone.</p>
+        <button class="btn btn-primary" onclick="switchTab('match')" style="margin-bottom:12px">Go to Step 1 — Match</button>
+        <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:14px;">— or paste a CSV directly —</div>
+        <div style="max-width:520px;margin:0 auto;">
+          <textarea class="pa-paste-area" id="pa-paste-input" rows="5" placeholder="Paste CSV here — needs columns: Product Name, Set Name, Condition, Printing, Market Price (or TCG Market Price)"></textarea>
+          <button class="btn btn-ghost" style="margin-top:8px;width:100%" onclick="paLoadFromPaste()">Load from pasted CSV</button>
+          <div id="pa-paste-err" class="hidden" style="margin-top:8px;font-size:12px;color:var(--error);"></div>
         </div>
-        <div class="step-badge" id="s3-badge">Upload both files first</div>
       </div>
-      <div class="step-body">
-        <div class="run-section">
-          <button class="btn btn-primary lg" id="run-btn" onclick="runMatcher()" disabled>
-            Run Cache Lister
-          </button>
-          <div class="run-hint">All processing happens locally — nothing is sent to any server.</div>
+
+      <div id="pa-main" class="hidden">
+
+        <!-- Source info bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;flex-wrap:wrap;">
+          <div>
+            <span id="pa-source-label" style="font-size:13px;color:var(--text-secondary);"></span>
+            <span id="pa-row-count" style="font-size:12px;color:var(--text-muted);margin-left:8px;"></span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="paReloadFromMatch()" id="pa-reload-btn">↺ Reload from Match</button>
+            <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="paShowPastePanel()">⊕ Load from CSV</button>
+          </div>
         </div>
-        <div id="results" class="hidden mt-16"></div>
-      </div>
-    </div>
+
+        <!-- Paste panel (hidden until triggered) -->
+        <div id="pa-paste-panel" class="hidden pa-section" style="margin-bottom:16px;">
+          <div class="pa-section-header">
+            <div class="pa-section-title">Load from pasted CSV</div>
+            <div class="pa-section-sub">Paste any CSV with Product Name, Set Name, Condition, Printing, and Market Price columns</div>
+          </div>
+          <div class="pa-section-body">
+            <textarea class="pa-paste-area" id="pa-paste-input2" rows="4" placeholder="Paste CSV here…"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="paLoadFromPaste2()">Load</button>
+              <button class="btn btn-ghost" style="font-size:13px;padding:8px 16px;" onclick="paHidePastePanel()">Cancel</button>
+            </div>
+            <div id="pa-paste-err2" class="hidden" style="margin-top:8px;font-size:12px;color:var(--error);"></div>
+          </div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="pa-metrics">
+          <div class="pa-metric">
+            <div class="pa-metric-label">Price Multiplier</div>
+            <div class="pa-metric-val" id="pa-metric-pct" style="color:var(--text-secondary)">100%</div>
+            <div class="pa-metric-sub" id="pa-metric-pct-sub">at market price</div>
+          </div>
+          <div class="pa-metric">
+            <div class="pa-metric-label">Total Impact</div>
+            <div class="pa-metric-val" id="pa-metric-impact" style="color:var(--text-secondary)">—</div>
+            <div class="pa-metric-sub" id="pa-metric-impact-sub"></div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="pa-section">
+          <div class="pa-section-header">
+            <div class="pa-section-title">Pricing Controls</div>
+            <div class="pa-section-sub">Adjust all prices relative to market value</div>
+          </div>
+          <div class="pa-section-body">
+
+            <!-- Slider -->
+            <div class="pa-slider-wrap">
+              <div class="pa-slider-label">
+                <span class="pa-slider-label-left">Market adjustment</span>
+                <span class="pa-slider-readout neutral" id="pa-readout">100% of market</span>
+              </div>
+              <input type="range" class="pa-slider" id="pa-slider"
+                     min="50" max="150" step="1" value="100"
+                     oninput="paOnSlider(this.value)">
+              <div class="pa-slider-ticks">
+                <span class="pa-slider-tick">50%</span>
+                <span class="pa-slider-tick">75%</span>
+                <span class="pa-slider-tick">100%</span>
+                <span class="pa-slider-tick">125%</span>
+                <span class="pa-slider-tick">150%</span>
+              </div>
+            </div>
+
+            <!-- Floor / Ceiling -->
+            <div class="pa-inputs">
+              <div class="pa-input-group">
+                <div class="pa-input-label">Floor price</div>
+                <div class="pa-input-wrap">
+                  <span class="pa-input-prefix">$</span>
+                  <input type="number" class="pa-input" id="pa-floor" value="0.25" min="0" step="0.01" oninput="paUpdate()">
+                </div>
+                <div class="pa-input-hint">Minimum price per card</div>
+              </div>
+              <div class="pa-input-group">
+                <div class="pa-input-label">Ceiling price <span style="font-weight:400;color:var(--text-muted)">(optional)</span></div>
+                <div class="pa-input-wrap">
+                  <span class="pa-input-prefix">$</span>
+                  <input type="number" class="pa-input" id="pa-ceiling" placeholder="None" min="0" step="0.01" oninput="paUpdate()">
+                </div>
+                <div class="pa-input-hint">Maximum price — leave blank for no cap</div>
+              </div>
+            </div>
+
+            <!-- Rounding -->
+            <div class="pa-round-wrap">
+              <div class="pa-round-label">Rounding</div>
+              <div class="pa-round-btns">
+                <button class="pa-round-btn active" data-round="none"  onclick="paSetRound('none')">None</button>
+                <button class="pa-round-btn"        data-round="0.25"  onclick="paSetRound('0.25')">$0.25</button>
+                <button class="pa-round-btn"        data-round="0.49"  onclick="paSetRound('0.49')">$0.49</button>
+                <button class="pa-round-btn"        data-round="0.99"  onclick="paSetRound('0.99')">$0.99</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Preview table -->
+        <div class="pa-section" style="margin-top:16px;">
+          <div class="pa-section-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div>
+              <div class="pa-section-title">Price Preview</div>
+              <div class="pa-section-sub">Updates live as you adjust controls</div>
+            </div>
+            <button class="btn btn-success" id="pa-export-btn" onclick="paExport()">
+              ⬇ Export Price Update CSV
+            </button>
+          </div>
+          <div class="pa-section-body" style="padding:0;">
+            <div class="pa-table-wrap">
+              <table id="pa-table">
+                <thead>
+                  <tr>
+                    <th>Card Name</th>
+                    <th>Set</th>
+                    <th>Condition</th>
+                    <th>Foil</th>
+                    <th style="text-align:right">Market</th>
+                    <th style="text-align:right">New Price</th>
+                    <th style="text-align:right">Change</th>
+                  </tr>
+                </thead>
+                <tbody id="pa-table-body">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="pa-no-market-note" class="hidden" style="margin-top:10px;">
+          <div class="banner info">ℹ️ Some rows are missing market price data and have been excluded from the preview. Check your catalog export includes a <code>TCG Market Price</code> or <code>Market Price</code> column.</div>
+        </div>
+
+        <div id="pa-no-id-note" class="hidden" style="margin-top:10px;">
+          <div class="banner info">ℹ️ Rows loaded from a pasted CSV don't have TCGplayer IDs — the export will omit the ID column. Import manually or cross-reference with your catalog.</div>
+        </div>
+
+      </div><!-- /pa-main -->
+    </div><!-- /tab-price-adjuster -->
 
   </main>
 
@@ -714,6 +1327,42 @@
       dzOriginals: {},
     };
 
+    // ── Price Adjuster state ───────────────────────────────────────────────
+    const PA = {
+      rows: [],          // { name, set, condition, printing, marketPrice, tcgId, qty }
+      pct: 100,
+      floor: 0.25,
+      ceiling: null,
+      round: 'none',
+      hasTcgIds: false,
+      fromPaste: false,
+    };
+
+    // ── Tab routing ────────────────────────────────────────────────────────
+    const TABS = ['match', 'review', 'price-adjuster'];
+
+    function switchTab(tab) {
+      if (!TABS.includes(tab)) tab = 'match';
+      TABS.forEach(t => {
+        const panel = document.getElementById('tab-' + t);
+        const btn   = document.getElementById('tab-btn-' + t);
+        if (panel) panel.classList.toggle('active', t === tab);
+        if (btn)   btn.classList.toggle('active',   t === tab);
+      });
+      if (tab === 'price-adjuster') paEnsureLoaded();
+      // Update hash
+      if (tab === 'price-adjuster') {
+        history.replaceState(null, '', '#price-adjuster');
+      } else {
+        history.replaceState(null, '', window.location.pathname);
+      }
+    }
+
+    // Handle hash on page load
+    window.addEventListener('load', () => {
+      if (window.location.hash === '#price-adjuster') switchTab('price-adjuster');
+    });
+
     // ── Scryfall set code → full name map (fetched silently on page load) ──
     const scryfallSetsPromise = (async () => {
       try {
@@ -731,10 +1380,8 @@
     })();
 
     // Build initialism → [set name, ...] index from the catalog's own set names.
-    // Used as a fallback so codes like ECC resolve to "Eternal Card Collection"
-    // using the exact name TCGPlayer puts in the catalog — no external API needed.
     function buildCatalogSetIndex(catalog) {
-      const seen = new Map(); // initials → [fullName, ...]
+      const seen = new Map();
       for (const row of catalog) {
         const name = (row['Set Name'] || '').trim();
         if (!name) continue;
@@ -744,123 +1391,57 @@
         const arr = seen.get(initials);
         if (!arr.includes(name)) arr.push(name);
       }
-      return seen; // Map<initials, [fullName, ...]>
+      return seen;
     }
 
     function resolveSetCode(rawSet, setsMap, catalogSetIndex) {
       if (!rawSet) return rawSet;
       const code = String(rawSet).trim().replace(/^\[|\]$/g, '').toLowerCase();
-
-      // 1. Try Scryfall code → full name, then see if the catalog knows that name too
       if (setsMap && setsMap.size) {
         const scryfallName = setsMap.get(code);
         if (scryfallName) return scryfallName;
       }
-
-      // 2. Try initialism match against the catalog's own set names (unique match only)
       if (catalogSetIndex) {
         const matches = catalogSetIndex.get(code);
         if (matches && matches.length === 1) return matches[0];
       }
-
       return rawSet;
     }
 
     // ── Condition mapping ──────────────────────────────────────────────────
-    // TCGPlayer official condition names: Near Mint / Lightly Played /
-    // Moderately Played / Heavily Played / Damaged
-    // TCGPlayer packs foil into the condition string in some exports:
-    //   "Near Mint Foil", "LP Foil", etc. — mapCond strips "foil" and returns
-    //   the base condition; foil detection is handled separately via condHasFoil().
     const COND = {
-      // Standard abbreviations
-      nm:                       'Near Mint',
-      lp:                       'Lightly Played',
-      mp:                       'Moderately Played',
-      hp:                       'Heavily Played',
-      dmg:                      'Damaged',
-      dm:                       'Damaged',
-      // Mint variants (TCGPlayer treats Mint = Near Mint)
-      mint:                     'Near Mint',
-      m:                        'Near Mint',
-      // Slightly Played = Lightly Played
-      sp:                       'Lightly Played',
-      'slightly played':        'Lightly Played',
-      // Excellent / Very Good → Lightly Played (closest TCGPlayer equivalent)
-      ex:                       'Lightly Played',
-      exc:                      'Lightly Played',
-      excellent:                'Lightly Played',
-      vg:                       'Lightly Played',
-      'very good':              'Lightly Played',
-      // Good / Played → Moderately Played
-      gd:                       'Moderately Played',
-      good:                     'Moderately Played',
-      played:                   'Moderately Played',
-      // Poor / Heavily Damaged → Damaged
-      po:                       'Damaged',
-      poor:                     'Damaged',
-      'heavily damaged':        'Damaged',
-      // TCGPlayer full names (no foil)
-      'near mint':              'Near Mint',
-      'lightly played':         'Lightly Played',
-      'moderately played':      'Moderately Played',
-      'heavily played':         'Heavily Played',
-      'damaged':                'Damaged',
-      // TCGPlayer combined condition+foil (foil stripped — see condHasFoil)
-      'near mint foil':         'Near Mint',
-      'lightly played foil':    'Lightly Played',
-      'moderately played foil': 'Moderately Played',
-      'heavily played foil':    'Heavily Played',
-      'damaged foil':           'Damaged',
-      'nm foil':                'Near Mint',
-      'lp foil':                'Lightly Played',
-      'mp foil':                'Moderately Played',
-      'hp foil':                'Heavily Played',
-      'dmg foil':               'Damaged',
-      'dm foil':                'Damaged',
-      'sp foil':                'Lightly Played',
+      nm: 'Near Mint', lp: 'Lightly Played', mp: 'Moderately Played',
+      hp: 'Heavily Played', dmg: 'Damaged', dm: 'Damaged',
+      mint: 'Near Mint', m: 'Near Mint',
+      sp: 'Lightly Played', 'slightly played': 'Lightly Played',
+      ex: 'Lightly Played', exc: 'Lightly Played', excellent: 'Lightly Played',
+      vg: 'Lightly Played', 'very good': 'Lightly Played',
+      gd: 'Moderately Played', good: 'Moderately Played', played: 'Moderately Played',
+      po: 'Damaged', poor: 'Damaged', 'heavily damaged': 'Damaged',
+      'near mint': 'Near Mint', 'lightly played': 'Lightly Played',
+      'moderately played': 'Moderately Played', 'heavily played': 'Heavily Played',
+      'damaged': 'Damaged',
+      'near mint foil': 'Near Mint', 'lightly played foil': 'Lightly Played',
+      'moderately played foil': 'Moderately Played', 'heavily played foil': 'Heavily Played',
+      'damaged foil': 'Damaged', 'nm foil': 'Near Mint', 'lp foil': 'Lightly Played',
+      'mp foil': 'Moderately Played', 'hp foil': 'Heavily Played',
+      'dmg foil': 'Damaged', 'dm foil': 'Damaged', 'sp foil': 'Lightly Played',
     };
 
-    // Returns true when "foil" is baked into the condition string (e.g. "Near Mint Foil")
-    function condHasFoil(v) {
-      return !!v && /\bfoil\b/i.test(String(v).trim());
-    }
-
-    function mapCond(v) {
-      if (!v) return null;
-      return COND[v.trim().toLowerCase()] || null;
-    }
-
+    function condHasFoil(v) { return !!v && /\bfoil\b/i.test(String(v).trim()); }
+    function mapCond(v) { if (!v) return null; return COND[v.trim().toLowerCase()] || null; }
     function mapFoil(v) {
       if (v === null || v === undefined) return 'Normal';
       const s = String(v).trim().toLowerCase();
       return ['yes','true','1','foil'].includes(s) ? 'Foil' : 'Normal';
     }
-
-    function normSet(s) {
-      if (!s) return '';
-      return String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
-    }
-
-    function normNum(v) {
-      if (!v) return '';
-      return String(v).trim().toLowerCase();
-    }
-
-    function normName(v) {
-      if (!v) return '';
-      return String(v).trim().toLowerCase();
-    }
+    function normSet(s)  { if (!s) return ''; return String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+    function normNum(v)  { if (!v) return ''; return String(v).trim().toLowerCase(); }
+    function normName(v) { if (!v) return ''; return String(v).trim().toLowerCase(); }
 
     // ── Drag & drop ────────────────────────────────────────────────────────
-    function onDragOver(e, id) {
-      e.preventDefault();
-      document.getElementById(id).classList.add('drag-over');
-    }
-
-    function onDragLeave(id) {
-      document.getElementById(id).classList.remove('drag-over');
-    }
+    function onDragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag-over'); }
+    function onDragLeave(id)   { document.getElementById(id).classList.remove('drag-over'); }
 
     function onDrop(e, n) {
       e.preventDefault();
@@ -880,8 +1461,7 @@
       if (S.dzOriginals[n]) { dz.innerHTML = S.dzOriginals[n]; delete S.dzOriginals[n]; }
     }
 
-    // ── Plain-text parser (Arena / MTGO / Moxfield format) ──────────────────
-    // "4 Lightning Bolt (M21) 123"  |  "4x Lightning Bolt (M21)"  |  "4 Lightning Bolt"
+    // ── Plain-text parser ──────────────────────────────────────────────────
     function parsePlainTextToRows(text) {
       const rows = [];
       for (const rawLine of text.split('\n')) {
@@ -890,13 +1470,11 @@
         if (line.startsWith('//') && !/^\d/.test(line)) continue;
         const isFoil = /\*[Ff]\*/i.test(line);
         line = line.replace(/\s*\*[^*]+\*(\s*\*[^*]+\*)*/g, '').trim();
-        // qty [x] name [(setCode)] [collectorNum]
         let m = line.match(/^(\d+)\s*[xX]?\s+(.+?)(?:\s+\(([A-Za-z0-9_]+)\))?(?:\s+(\d+))?\s*$/);
         if (m) {
           rows.push({ Name: m[2].trim(), Number: m[4] || '', Set: m[3] || '', Condition: 'NM', Quantity: m[1], Foil: isFoil ? 'foil' : '' });
           continue;
         }
-        // name x qty  (suffix style)
         m = line.match(/^(.+?)\s+[xX](\d+)\s*$/);
         if (m) {
           rows.push({ Name: m[1].trim(), Number: '', Set: '', Condition: 'NM', Quantity: m[2], Foil: isFoil ? 'foil' : '' });
@@ -911,14 +1489,8 @@
       const fname = file.name.toLowerCase();
       const isText = fname.endsWith('.txt') || file.type === 'text/plain';
       const isCsv  = fname.endsWith('.csv') || file.type === 'text/csv';
-      if (n === 1 && !isCsv) {
-        showErr(n, 'Only CSV files are supported for the TCGPlayer catalog. Please upload a .csv file.');
-        return;
-      }
-      if (n === 2 && !isCsv && !isText) {
-        showErr(n, 'Please upload a .csv or .txt file.');
-        return;
-      }
+      if (n === 1 && !isCsv) { showErr(n, 'Only CSV files are supported for the TCGPlayer catalog. Please upload a .csv file.'); return; }
+      if (n === 2 && !isCsv && !isText) { showErr(n, 'Please upload a .csv or .txt file.'); return; }
       const dz = document.getElementById('dz' + n);
       S.dzOriginals[n] = dz.innerHTML;
       dz.innerHTML = `<span class="spinner" style="width:24px;height:24px;border-width:3px;margin-bottom:10px"></span><div class="dz-text">Parsing…</div>`;
@@ -928,8 +1500,7 @@
         reader.onerror = () => { restoreDropZone(n); showErr(n, 'Failed to read file.'); };
         reader.onload  = e => {
           const rows = parsePlainTextToRows(e.target.result || '');
-          const fields = ['Name', 'Number', 'Set', 'Condition', 'Quantity', 'Foil'];
-          onSellerParsed(file.name, { data: rows, meta: { fields } });
+          onSellerParsed(file.name, { data: rows, meta: { fields: ['Name','Number','Set','Condition','Quantity','Foil'] } });
         };
         reader.readAsText(file);
         return;
@@ -944,15 +1515,11 @@
     }
 
     // ── File 1 — TCGPlayer catalog ─────────────────────────────────────────
-    const CAT_REQUIRED = [
-      'TCGplayer Id','Product Name','Set Name','Number',
-      'Condition','Add to Quantity',
-    ];
+    const CAT_REQUIRED = ['TCGplayer Id','Product Name','Set Name','Number','Condition','Add to Quantity'];
 
     function onCatalogParsed(filename, res) {
       clearErr(1);
       if (!res.data.length) { restoreDropZone(1); showErr(1, 'The file appears to be empty.'); return; }
-
       const cols = res.meta.fields || [];
       if (!cols.includes('TCGplayer Id')) {
         restoreDropZone(1);
@@ -960,16 +1527,11 @@
         return;
       }
       const missing = CAT_REQUIRED.filter(c => !cols.includes(c));
-      if (missing.length) {
-        restoreDropZone(1);
-        showErr(1, 'Missing required columns: ' + missing.map(c => '"' + c + '"').join(', '));
-        return;
-      }
+      if (missing.length) { restoreDropZone(1); showErr(1, 'Missing required columns: ' + missing.map(c => '"' + c + '"').join(', ')); return; }
 
       S.catalog = res.data;
       S.catalogHeaders = res.meta.fields || [];
 
-      // UI
       const el = $('#f1-info');
       el.className = '';
       const uniqueSetNames = [...new Set(res.data.map(r => r['Set Name']).filter(Boolean))].sort();
@@ -984,8 +1546,6 @@
       $('#dz1').classList.add('hidden');
       setBadge('s1-badge', res.data.length.toLocaleString() + ' rows', true);
       $('#step1').classList.add('done');
-
-      // Unlock step 2
       $('#step2').classList.remove('disabled');
       setBadge('s2-badge', 'Ready', false);
     }
@@ -1017,30 +1577,22 @@
       clearErr(2);
       clearPreview();
       if (!res.data.length) { restoreDropZone(2); showErr(2, 'The file appears to be empty.'); return; }
-
       const colMap = detectCols(res.meta.fields || []);
       const missing = SELLER_REQ.filter(k => !colMap[k]);
       if (missing.length) {
         restoreDropZone(2);
-        showErr(2, 'Missing required columns: ' + missing.join(', ') +
-          '. Your CSV must include Name, Set, Condition, and Quantity columns.');
+        showErr(2, 'Missing required columns: ' + missing.join(', ') + '. Your CSV must include Name, Set, Condition, and Quantity columns.');
         return;
       }
-
       S.sellerList = res.data;
       S.colMap = colMap;
-
-      // File info
       const el = $('#f2-info');
       el.className = '';
       el.innerHTML = fileInfoHtml(filename, res.data.length, () => resetFile(2));
       $('#dz2').classList.add('hidden');
       setBadge('s2-badge', res.data.length.toLocaleString() + ' rows', true);
       $('#step2').classList.add('done');
-
       showPreview(res.data, colMap);
-
-      // Unlock step 3
       $('#step3').classList.remove('disabled');
       setBadge('s3-badge', 'Ready', false);
       $('#run-btn').disabled = false;
@@ -1049,33 +1601,23 @@
     function showPreview(rows, cm) {
       const el = $('#f2-preview');
       el.classList.remove('hidden');
-
       const FIELDS = [
-        { key:'name',      label:'Name',      req:true  },
-        { key:'number',    label:'Number',    req:false },
-        { key:'set',       label:'Set',       req:true  },
-        { key:'condition', label:'Condition', req:true  },
-        { key:'quantity',  label:'Quantity',  req:true  },
-        { key:'foil',      label:'Foil',      req:false },
-        { key:'price',     label:'Price',     req:false },
+        { key:'name', label:'Name', req:true }, { key:'number', label:'Number', req:false },
+        { key:'set', label:'Set', req:true }, { key:'condition', label:'Condition', req:true },
+        { key:'quantity', label:'Quantity', req:true }, { key:'foil', label:'Foil', req:false },
+        { key:'price', label:'Price', req:false },
       ];
-
       const mapHtml = FIELDS.map(f => {
         const val = cm[f.key];
         const cls = val ? '' : (f.req ? 'missing' : 'absent');
         const display = val ? esc(val) : (f.req ? 'NOT FOUND' : 'not detected');
-        return `<div class="cmi">
-          <div class="cmi-key">${f.label}</div>
-          <div class="cmi-val ${cls}">${display}</div>
-        </div>`;
+        return `<div class="cmi"><div class="cmi-key">${f.label}</div><div class="cmi-val ${cls}">${display}</div></div>`;
       }).join('');
-
       const previewCols = Object.values(cm).filter(Boolean);
       const thHtml = previewCols.map(h => `<th>${esc(h)}</th>`).join('');
       const trHtml = rows.slice(0,5).map(row =>
         '<tr>' + previewCols.map(h => `<td>${esc(row[h] || '')}</td>`).join('') + '</tr>'
       ).join('');
-
       el.innerHTML = `
         <div class="preview-section">
           <div class="section-label">Detected Column Mapping</div>
@@ -1083,18 +1625,13 @@
         </div>
         <div class="preview-section mt-12">
           <div class="section-label">Preview — first ${Math.min(rows.length,5)} rows</div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr>${thHtml}</tr></thead>
-              <tbody>${trHtml}</tbody>
-            </table>
-          </div>
-        </div>
-      `;
+          <div class="table-wrap"><table><thead><tr>${thHtml}</tr></thead><tbody>${trHtml}</tbody></table></div>
+        </div>`;
     }
 
     function resetAll() {
       resetFile(1);
+      switchTab('match');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1126,32 +1663,32 @@
         $('#step3').classList.add('disabled');
         setBadge('s3-badge', 'Upload both files first', false);
         $('#run-btn').disabled = true;
+        // Reset review tab
         $('#results').classList.add('hidden');
         $('#results').innerHTML = '';
+        $('#review-empty-state').classList.remove('hidden');
+        const pip = $('#review-pip');
+        pip.textContent = '2';
+        $('#tab-btn-review').classList.remove('has-results');
       }
     }
 
     // ── Catalog index ──────────────────────────────────────────────────────
     function buildIndex(rows) {
-      const byNumCP  = new Map(); // (number||cond||print) → [rows]
-      const byNameCP = new Map(); // (name||cond||print) → [rows]
-      const byName   = new Set(); // all normalized card names (for existence check)
-      const bySets   = new Set(); // all normalized set names (for existence check)
-
+      const byNumCP  = new Map();
+      const byNameCP = new Map();
+      const byName   = new Set();
+      const bySets   = new Set();
       for (const row of rows) {
-        const num     = normNum(row['Number']);
+        const num  = normNum(row['Number']);
         const rawCond = (row['Condition'] || '').trim();
-        // TCGPlayer bakes foil into the condition string ("Near Mint Foil").
-        // Normalize the same way matchRow does so lookup keys align.
         const hasFoilCond = condHasFoil(rawCond);
         const cond  = hasFoilCond ? (mapCond(rawCond) || rawCond) : rawCond;
         const print = hasFoilCond ? 'Foil' : (row['Printing'] || 'Normal').trim();
         const name  = normName(row['Product Name']);
         const set   = normSet(row['Set Name']);
-
         if (name) byName.add(name);
         if (set)  bySets.add(set);
-
         if (num) {
           const k = `${num}||${cond}||${print}`;
           if (!byNumCP.has(k)) byNumCP.set(k, []);
@@ -1173,23 +1710,19 @@
     function setsMatch(catalogSetName, sellerSet) {
       const cat  = normSet(catalogSetName);
       const sell = normSet(sellerSet);
-      if (!sell) return true; // no set given — accept anything
+      if (!sell) return true;
       if (cat === sell || cat.includes(sell) || sell.includes(cat)) return true;
-      // Initialism: "ecc" matches "eternal card collection"
       if (sell.length >= 2 && sell.length <= 6 && setInitials(catalogSetName) === sell) return true;
       return false;
     }
 
     function bestSetMatch(candidates, sellerSet) {
       if (!candidates || !candidates.length) return null;
-      // Exact normalized match first
       const ns = normSet(sellerSet);
       const exact = candidates.find(r => normSet(r['Set Name']) === ns);
       if (exact) return exact;
-      // Substring / initialism match
       const fuzzy = candidates.find(r => setsMatch(r['Set Name'], sellerSet));
       if (fuzzy) return fuzzy;
-      // Single candidate — collector number is specific enough, accept it
       if (candidates.length === 1) return candidates[0];
       return null;
     }
@@ -1200,15 +1733,11 @@
       const rawSet   = resolveSetCode(row[cm.set] || '', setsMap, catalogSetIndex);
       const rawCond  = row[cm.condition] || '';
       const rawFoil  = cm.foil ? (row[cm.foil] || '') : '';
-
       const cond    = mapCond(rawCond);
-      // If no dedicated foil column, fall back to detecting "Foil" in the condition string
-      // (e.g. TCGPlayer exports "Near Mint Foil" as a combined condition value)
       const printing = mapFoil(rawFoil) === 'Normal' && !cm.foil && condHasFoil(rawCond)
-        ? 'Foil'
-        : mapFoil(rawFoil);
-      const num     = normNum(rawNum);
-      const name    = normName(rawName);
+        ? 'Foil' : mapFoil(rawFoil);
+      const num  = normNum(rawNum);
+      const name = normName(rawName);
 
       if (!cond) {
         return {
@@ -1222,29 +1751,22 @@
         };
       }
 
-      // Priority 1: Number + Set + Condition + Printing (collector number confirms printing)
       if (num) {
         const k = `${num}||${cond}||${printing}`;
         const m = bestSetMatch(idx.byNumCP.get(k), rawSet);
         if (m) return { match: m, via: 'number+set+cond+print', needsReview: false };
       }
-
-      // Priority 1b: Number + Name + Condition + Printing
       if (num && name) {
         const k = `${num}||${cond}||${printing}`;
         const candidates = idx.byNumCP.get(k) || [];
         const m = candidates.find(r => normName(r['Product Name']) === name);
         if (m) return { match: m, via: 'number+name+cond+print', needsReview: false };
       }
-
-      // Priority 2: Name + Set + Condition + Printing (no number — needs user review)
       if (name) {
         const k = `${name}||${cond}||${printing}`;
         const m = bestSetMatch(idx.byNameCP.get(k), rawSet);
         if (m) return { match: m, via: 'name+set+cond+print', needsReview: true };
       }
-
-      // Priority 3: Name + Condition + Printing, set-agnostic for short codes (needs review)
       if (name) {
         const codeOnly = normSet(row[cm.set] || '').replace(/\s/g, '');
         if (codeOnly.length >= 2 && codeOnly.length <= 6) {
@@ -1255,10 +1777,6 @@
       }
 
       const desc = rawName || rawNum || '(unknown)';
-
-      // Foil cards with no foil row in the catalog: give a specific, actionable error.
-      // Do NOT fall back to the non-foil product ID — TCGPlayer validates condition vs product
-      // type and will reject the import with "does not match product details".
       if (printing === 'Foil') {
         const hasNonFoilInCatalog = !!(
           (num && idx.byNumCP.get(`${num}||${cond}||Normal`)) ||
@@ -1301,53 +1819,40 @@
     }
 
     async function doMatch() {
-      await new Promise(r => setTimeout(r, 0)); // yield to let spinner render
+      await new Promise(r => setTimeout(r, 0));
       const { catalog, sellerList, colMap: cm } = S;
       const idx = buildIndex(catalog);
       const setsMap = await scryfallSetsPromise;
       const catalogSetIndex = buildCatalogSetIndex(catalog);
 
-      const matched       = []; // confirmed matches (have collector number)
-      const pendingReview = []; // { catalogRow, quantity, price, sellerRow, via }
-      const unmatched     = []; // { row, error }
+      const matched       = [];
+      const pendingReview = [];
+      const unmatched     = [];
 
       for (const row of sellerList) {
         const rawQty = (cm.quantity ? row[cm.quantity] : '') || '0';
         const qty    = parseInt(rawQty, 10) || 0;
         const price  = (cm.price ? (row[cm.price] || '') : '').trim();
-
         if (qty <= 0) continue;
-
         const r = matchRow(row, cm, idx, setsMap, catalogSetIndex);
         if (r.match) {
-          if (r.needsReview) {
-            pendingReview.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, via: r.via });
-          } else {
-            matched.push({ catalogRow: r.match, quantity: qty, price });
-          }
+          if (r.needsReview) pendingReview.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, via: r.via });
+          else               matched.push({ catalogRow: r.match, quantity: qty, price });
         } else {
           unmatched.push({ row, error: r.error, checks: r.checks });
         }
       }
 
-      // Dedup confirmed matches by TCGplayer Id — sum quantities, keep first price
       const byId = new Map();
       for (const m of matched) {
         const id = m.catalogRow['TCGplayer Id'];
-        if (byId.has(id)) {
-          byId.get(id).quantity += m.quantity;
-        } else {
-          byId.set(id, { ...m });
-        }
+        if (byId.has(id)) byId.get(id).quantity += m.quantity;
+        else byId.set(id, { ...m });
       }
-
       const deduped    = [...byId.values()];
       const mergedDups = matched.length - deduped.length;
-      // Exclude qty=0 rows (skipped) so the displayed numbers always sum correctly:
-      // Seller rows = Matched + Needs Review + Unmatched (+ dupes merged back into Matched)
       const total = matched.length + pendingReview.length + unmatched.length;
 
-      // Build set resolution diagnostics
       const setResolution = [];
       if (cm.set) {
         const seen = new Set();
@@ -1362,27 +1867,31 @@
         setResolution.sort((a, b) => Number(a.inCatalog) - Number(b.inCatalog) || a.raw.localeCompare(b.raw));
       }
       const catalogSets = [...idx.bySets].map(s => {
-        // recover original casing from catalog rows
         const row = catalog.find(r => normSet(r['Set Name']) === s);
         return row ? (row['Set Name'] || s) : s;
       }).sort((a, b) => a.localeCompare(b));
 
       S.matchResults = { deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets };
       showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets);
+
+      // Auto-switch to Review tab and update pip
+      const pip = $('#review-pip');
+      pip.textContent = deduped.length + (pendingReview.length ? '+' : '');
+      $('#tab-btn-review').classList.add('has-results');
+      switchTab('review');
     }
 
     // ── Results UI ─────────────────────────────────────────────────────────
     function showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution = [], catalogSets = []) {
       const el = $('#results');
       el.classList.remove('hidden');
+      $('#review-empty-state').classList.add('hidden');
 
       const hasPending   = pendingReview.length > 0;
       const hasUnmatched = unmatched.length > 0;
-      const allDone      = !hasPending;
 
       setBadge('s3-badge', deduped.length + (hasPending ? '+' + pendingReview.length + '?' : '') + ' matched', true);
 
-      // ── Review section ──
       let reviewHtml = '';
       if (hasPending) {
         try {
@@ -1396,30 +1905,23 @@
             const cSet  = item.catalogRow['Set Name']     || '—';
             const cNum  = item.catalogRow['Number']       || '—';
             return `<tr>
-              <td>${esc(sName)}</td>
-              <td style="color:var(--text-muted)">${esc(sSet)}</td>
-              <td>${esc(sCond)}</td>
-              <td>${esc(sQty)}</td>
+              <td>${esc(sName)}</td><td style="color:var(--text-muted)">${esc(sSet)}</td>
+              <td>${esc(sCond)}</td><td>${esc(sQty)}</td>
               <td class="review-arrow">→</td>
               <td style="color:var(--success)">${esc(cName)}</td>
               <td style="color:var(--text-muted);font-size:11px">${esc(cSet)}</td>
               <td style="color:var(--text-muted)">${esc(cNum)}</td>
-              <td>
-                <div style="display:flex;gap:5px;">
-                  <button class="btn btn-primary" style="padding:3px 10px;font-size:11px;" onclick="approveReview(${i})">✓</button>
-                  <button class="btn btn-ghost"   style="padding:3px 9px;font-size:11px;"  onclick="rejectReview(${i})">✕</button>
-                </div>
-              </td>
+              <td><div style="display:flex;gap:5px;">
+                <button class="btn btn-primary" style="padding:3px 10px;font-size:11px;" onclick="approveReview(${i})">✓</button>
+                <button class="btn btn-ghost"   style="padding:3px 9px;font-size:11px;"  onclick="rejectReview(${i})">✕</button>
+              </div></td>
             </tr>`;
           }).join('');
-
           reviewHtml = `
             <div class="review-section" id="review-section">
               <div class="review-header">
                 <div class="review-header-left">
-                  <div class="section-label" style="margin:0;">
-                    Needs Review &nbsp;<span class="badge warn">${pendingReview.length}</span>
-                  </div>
+                  <div class="section-label" style="margin:0;">Needs Review &nbsp;<span class="badge warn">${pendingReview.length}</span></div>
                   <div class="review-hint">Matched by name — no collector number to confirm the printing. Approve or skip each row.</div>
                 </div>
                 <button class="btn btn-primary" style="font-size:12px;padding:6px 14px;" onclick="approveAll()">✓ Approve All</button>
@@ -1428,9 +1930,7 @@
                 <table>
                   <thead><tr>
                     <th>Your Card</th><th>Your Set</th><th>Cond</th><th>Qty</th>
-                    <th></th>
-                    <th>Matched As</th><th>Catalog Set</th><th>#</th>
-                    <th></th>
+                    <th></th><th>Matched As</th><th>Catalog Set</th><th>#</th><th></th>
                   </tr></thead>
                   <tbody>${reviewRows}</tbody>
                 </table>
@@ -1440,13 +1940,11 @@
           console.error('Review section render error:', err);
           reviewHtml = `<div class="review-section" id="review-section" style="color:var(--error);padding:12px;">
             Error rendering review table — check the browser console (F12) for details.<br>
-            You can still click <strong>✓ Approve All</strong> below to approve all ${pendingReview.length} pending items.
-            <br><br><button class="btn btn-primary" onclick="approveAll()">✓ Approve All</button>
+            <button class="btn btn-primary" style="margin-top:10px;" onclick="approveAll()">✓ Approve All</button>
           </div>`;
         }
       }
 
-      // ── Unmatched section ──
       let unmatchedTableHtml = '';
       if (hasUnmatched) {
         const cm = S.colMap;
@@ -1455,40 +1953,25 @@
           const set  = cm.set       ? (u.row[cm.set]       || '—') : '—';
           const cond = cm.condition ? (u.row[cm.condition] || '—') : '—';
           const foil = cm.foil      ? (u.row[cm.foil]      || '—') : '—';
-
           let reasonHtml;
           if (u.checks) {
             const c = u.checks;
             const chip = (ok, label) =>
-              `<span style="color:${ok ? 'var(--success)' : 'var(--error)'};font-size:11px;white-space:nowrap;">` +
-              `${ok ? '✓' : '✕'} ${esc(label)}</span>`;
+              `<span style="color:${ok ? 'var(--success)' : 'var(--error)'};font-size:11px;white-space:nowrap;">${ok ? '✓' : '✕'} ${esc(label)}</span>`;
             reasonHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-              ${chip(c.set.ok,  'Set: '  + c.set.label)}
-              ${chip(c.name.ok, 'Name: ' + c.name.label)}
-              ${chip(c.condition.ok, 'Cond: ' + c.condition.label)}
+              ${chip(c.set.ok,'Set: '+c.set.label)}${chip(c.name.ok,'Name: '+c.name.label)}${chip(c.condition.ok,'Cond: '+c.condition.label)}
             </div>`;
           } else {
             reasonHtml = `<span style="color:var(--error);font-size:11px;">${esc(u.error || '')}</span>`;
           }
-
-          return `<tr>
-            <td>${esc(name)}</td>
-            <td>${esc(set)}</td>
-            <td>${esc(cond)}</td>
-            <td>${esc(foil)}</td>
-            <td style="max-width:320px;white-space:normal;">${reasonHtml}</td>
-          </tr>`;
+          return `<tr><td>${esc(name)}</td><td>${esc(set)}</td><td>${esc(cond)}</td><td>${esc(foil)}</td>
+            <td style="max-width:320px;white-space:normal;">${reasonHtml}</td></tr>`;
         }).join('');
-
         unmatchedTableHtml = `
           <div class="unmatched-section">
             <div class="unmatched-header">
-              <div class="section-label" style="margin:0;">
-                Unmatched Rows &nbsp;<span class="badge error">${unmatched.length}</span>
-              </div>
-              <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="dlUnmatched()">
-                Download Unmatched CSV
-              </button>
+              <div class="section-label" style="margin:0;">Unmatched Rows &nbsp;<span class="badge error">${unmatched.length}</span></div>
+              <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="dlUnmatched()">Download Unmatched CSV</button>
             </div>
             <div class="table-wrap">
               <table>
@@ -1501,30 +1984,15 @@
 
       el.innerHTML = `
         <div class="results-grid">
-          <div class="rcard neutral">
-            <div class="rcard-val">${total}</div>
-            <div class="rcard-label">Seller rows</div>
-          </div>
-          <div class="rcard good">
-            <div class="rcard-val">${deduped.length}</div>
-            <div class="rcard-label">Matched</div>
-          </div>
-          ${hasPending ? `
-          <div class="rcard warn">
-            <div class="rcard-val">${pendingReview.length}</div>
-            <div class="rcard-label">Needs Review</div>
-          </div>` : ''}
-          <div class="rcard ${hasUnmatched ? 'warn' : 'good'}">
-            <div class="rcard-val">${unmatched.length}</div>
-            <div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div>
-          </div>
-          <div class="rcard neutral">
-            <div class="rcard-val">${mergedDups}</div>
-            <div class="rcard-label">Dupes merged</div>
-          </div>
+          <div class="rcard neutral"><div class="rcard-val">${total}</div><div class="rcard-label">Seller rows</div></div>
+          <div class="rcard good"><div class="rcard-val">${deduped.length}</div><div class="rcard-label">Matched</div></div>
+          ${hasPending ? `<div class="rcard warn"><div class="rcard-val">${pendingReview.length}</div><div class="rcard-label">Needs Review</div></div>` : ''}
+          <div class="rcard ${hasUnmatched ? 'warn' : 'good'}"><div class="rcard-val">${unmatched.length}</div><div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div></div>
+          <div class="rcard neutral"><div class="rcard-val">${mergedDups}</div><div class="rcard-label">Dupes merged</div></div>
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" ${hasPending ? 'disabled title="Finish reviewing before downloading"' : ''} onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
+          <button class="btn btn-ghost" onclick="switchTab('price-adjuster')" title="Adjust prices before exporting">✦ Price Adjuster</button>
           <button class="btn btn-ghost btn-float-reset" onclick="resetAll()">↩ Start Over</button>
         </div>
         ${reviewHtml}
@@ -1540,23 +2008,16 @@
 
     function buildSetMappingHtml(setResolution, catalogSets) {
       if (!setResolution.length && !catalogSets.length) return '';
-
       const resRows = setResolution.map(s => {
-        const resolved  = s.resolved !== s.raw ? esc(s.resolved) : '<span style="color:var(--text-muted)">— not resolved —</span>';
-        const status    = s.inCatalog
+        const resolved = s.resolved !== s.raw ? esc(s.resolved) : '<span style="color:var(--text-muted)">— not resolved —</span>';
+        const status   = s.inCatalog
           ? '<span style="color:var(--success)">✓ found</span>'
           : '<span style="color:var(--error)">✕ not in catalog</span>';
-        return `<tr>
-          <td style="font-family:monospace;color:var(--text)">${esc(s.raw)}</td>
-          <td style="font-size:12px">${resolved}</td>
-          <td>${status}</td>
-        </tr>`;
+        return `<tr><td style="font-family:monospace;color:var(--text)">${esc(s.raw)}</td><td style="font-size:12px">${resolved}</td><td>${status}</td></tr>`;
       }).join('');
-
       const catList = catalogSets.map(s =>
         `<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--text-secondary);margin:2px 3px 2px 0">${esc(s)}</span>`
       ).join('');
-
       return `
         <div class="unmatched-section" style="margin-top:28px;">
           <details>
@@ -1564,33 +2025,24 @@
               <span class="section-label" style="margin:0;">Set Mapping Diagnostics</span>
               <span style="font-size:11px;color:var(--text-muted)">(click to expand)</span>
             </summary>
-
             <div class="section-label" style="margin-bottom:6px;">Your Set Codes → Resolution</div>
             <div class="table-wrap" style="margin-bottom:18px;">
-              <table>
-                <thead><tr><th>Your Code</th><th>Resolved To</th><th>Status</th></tr></thead>
-                <tbody>${resRows}</tbody>
-              </table>
+              <table><thead><tr><th>Your Code</th><th>Resolved To</th><th>Status</th></tr></thead><tbody>${resRows}</tbody></table>
             </div>
-
             <div class="section-label" style="margin-bottom:6px;">Set Names in Your TCGPlayer Catalog</div>
             <div style="line-height:2">${catList}</div>
           </details>
         </div>`;
     }
 
-    // ── Review actions ──────────────────────────────────────────────────────
+    // ── Review actions ─────────────────────────────────────────────────────
     function approveReview(i) {
       const { pendingReview, deduped } = S.matchResults;
       const item = pendingReview.splice(i, 1)[0];
       const id = item.catalogRow['TCGplayer Id'];
       const existing = deduped.find(d => d.catalogRow['TCGplayer Id'] === id);
-      if (existing) {
-        existing.quantity += item.quantity;
-        S.matchResults.mergedDups++;
-      } else {
-        deduped.push(item);
-      }
+      if (existing) { existing.quantity += item.quantity; S.matchResults.mergedDups++; }
+      else deduped.push(item);
       rerenderResults();
     }
 
@@ -1606,12 +2058,8 @@
       for (const item of pendingReview) {
         const id = item.catalogRow['TCGplayer Id'];
         const existing = deduped.find(d => d.catalogRow['TCGplayer Id'] === id);
-        if (existing) {
-          existing.quantity += item.quantity;
-          S.matchResults.mergedDups++;
-        } else {
-          deduped.push({ ...item });
-        }
+        if (existing) { existing.quantity += item.quantity; S.matchResults.mergedDups++; }
+        else deduped.push({ ...item });
       }
       S.matchResults.pendingReview = [];
       rerenderResults();
@@ -1619,25 +2067,23 @@
 
     function rerenderResults() {
       const { deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets } = S.matchResults;
+      // Update pip
+      const pip = $('#review-pip');
+      pip.textContent = deduped.length + (pendingReview.length ? '+' : '');
       showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets);
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
     function dlOutput() {
       const { deduped, setResolution } = S.matchResults;
-
       const today = new Date();
       const yyyymmdd = today.getFullYear().toString()
         + String(today.getMonth() + 1).padStart(2, '0')
         + String(today.getDate()).padStart(2, '0');
-      const codes = [...new Set(
-        (setResolution || []).map(s => s.raw.replace(/^\[|\]$/g, '').trim().toUpperCase()).filter(Boolean)
-      )];
+      const codes = [...new Set((setResolution || []).map(s => s.raw.replace(/^\[|\]$/g,'').trim().toUpperCase()).filter(Boolean))];
       const setSlug = codes.length === 0 ? '' : codes.length <= 3 ? '-' + codes.join('-') : '-MULTI';
       const filename = `tcgplayer-import${setSlug}-${yyyymmdd}.csv`;
-
       if (!deduped.length) { dlFile('', filename); return; }
-
       const rows = deduped.map(m => {
         const r = { ...m.catalogRow };
         const marketPrice = r['TCG Market Price'] || r['Market Price'] || '';
@@ -1645,7 +2091,6 @@
         r['TCG Marketplace Price'] = m.price || marketPrice;
         return r;
       });
-
       dlFile(Papa.unparse(rows, { columns: S.catalogHeaders }), filename);
     }
 
@@ -1664,12 +2109,345 @@
       URL.revokeObjectURL(a.href);
     }
 
+    // ── Price Adjuster ─────────────────────────────────────────────────────
+
+    // Compute adjusted price given market price and current PA settings.
+    function paComputePrice(marketPrice) {
+      if (!marketPrice || isNaN(parseFloat(marketPrice))) return null;
+      const market = parseFloat(marketPrice);
+      if (market <= 0) return null;
+
+      // Apply percentage
+      let price = Math.round(market * (PA.pct / 100) * 100) / 100;
+
+      // Apply rounding (psychological pricing — ceil to nearest price point)
+      if (PA.round === '0.25') {
+        // Round to nearest $0.25
+        price = Math.round(price * 4) / 4;
+      } else if (PA.round === '0.49') {
+        // Prices: $0.49, $0.99, $1.49, $1.99 ... (interval $0.50)
+        // Ceil to nearest: Math.ceil((price - 0.49) / 0.50) * 0.50 + 0.49
+        const raw = Math.ceil(Math.round((price - 0.49) * 1000) / 1000 / 0.50) * 0.50 + 0.49;
+        price = Math.round(raw * 100) / 100;
+      } else if (PA.round === '0.99') {
+        // Prices: $0.99, $1.99, $2.99 ... (interval $1.00)
+        const raw = Math.ceil(Math.round((price - 0.99) * 1000) / 1000) + 0.99;
+        price = Math.round(raw * 100) / 100;
+      }
+
+      // Apply floor
+      if (PA.floor > 0 && price < PA.floor) price = Math.round(PA.floor * 100) / 100;
+
+      // Apply ceiling
+      if (PA.ceiling !== null && PA.ceiling > 0 && price > PA.ceiling) {
+        price = Math.round(PA.ceiling * 100) / 100;
+      }
+
+      return Math.round(price * 100) / 100;
+    }
+
+    function paEnsureLoaded() {
+      // If match results available and we haven't loaded from them yet, or results changed
+      if (S.matchResults && S.matchResults.deduped.length > 0 && !PA.fromPaste) {
+        paLoadFromMatch();
+      }
+      paRender();
+    }
+
+    function paLoadFromMatch() {
+      if (!S.matchResults || !S.matchResults.deduped.length) return;
+      const deduped = S.matchResults.deduped;
+      PA.rows = deduped.map(m => {
+        const cr = m.catalogRow;
+        const marketPrice = cr['TCG Market Price'] || cr['Market Price'] || '';
+        return {
+          name:        cr['Product Name'] || '',
+          set:         cr['Set Name']     || '',
+          condition:   cr['Condition']    || '',
+          printing:    cr['Printing']     || 'Normal',
+          marketPrice: marketPrice,
+          tcgId:       cr['TCGplayer Id'] || '',
+          qty:         m.quantity,
+          number:      cr['Number']       || '',
+        };
+      });
+      PA.hasTcgIds = true;
+      PA.fromPaste = false;
+      paRender();
+    }
+
+    function paReloadFromMatch() {
+      if (!S.matchResults || !S.matchResults.deduped.length) {
+        alert('No match results available. Run a match in Step 1 first.');
+        return;
+      }
+      PA.fromPaste = false;
+      paLoadFromMatch();
+    }
+
+    function paLoadFromPaste() {
+      const raw = ($('pa-paste-input').value || '').trim();
+      paParseAndLoad(raw, 'pa-paste-err', true);
+    }
+
+    function paLoadFromPaste2() {
+      const raw = ($('pa-paste-input2').value || '').trim();
+      paParseAndLoad(raw, 'pa-paste-err2', false);
+    }
+
+    function paParseAndLoad(raw, errId, isInitialLoad) {
+      const errEl = $(errId);
+      errEl.className = 'hidden';
+      errEl.textContent = '';
+
+      if (!raw) { errEl.className = ''; errEl.textContent = 'Nothing pasted — paste your CSV above first.'; return; }
+
+      const result = Papa.parse(raw, { header: true, skipEmptyLines: true });
+      if (!result.data.length) { errEl.className = ''; errEl.textContent = 'Could not parse CSV — check the format.'; return; }
+
+      const fields = result.meta.fields || [];
+      const find = (...cands) => {
+        const lc = fields.map(f => f.toLowerCase().trim());
+        for (const c of cands) { const i = lc.indexOf(c.toLowerCase()); if (i >= 0) return fields[i]; }
+        return null;
+      };
+
+      const fName   = find('product name','name','card name');
+      const fSet    = find('set name','set','edition');
+      const fCond   = find('condition','cond');
+      const fPrint  = find('printing','foil','finish');
+      const fMarket = find('tcg market price','market price','price');
+
+      if (!fName || !fMarket) {
+        errEl.className = '';
+        errEl.textContent = 'Missing required columns: need "Product Name" (or "Name") and "Market Price" (or "TCG Market Price").';
+        return;
+      }
+
+      PA.rows = result.data.map(r => ({
+        name:        r[fName]   || '',
+        set:         fSet   ? (r[fSet]   || '') : '',
+        condition:   fCond  ? (r[fCond]  || '') : '',
+        printing:    fPrint ? (r[fPrint] || 'Normal') : 'Normal',
+        marketPrice: r[fMarket] || '',
+        tcgId:       '',
+        qty:         1,
+        number:      '',
+      }));
+      PA.hasTcgIds = false;
+      PA.fromPaste = true;
+
+      if (!isInitialLoad) paHidePastePanel();
+      paRender();
+    }
+
+    function paShowPastePanel() {
+      $('#pa-paste-panel').classList.remove('hidden');
+    }
+
+    function paHidePastePanel() {
+      $('#pa-paste-panel').classList.add('hidden');
+      $('#pa-paste-input2').value = '';
+      $('#pa-paste-err2').className = 'hidden';
+    }
+
+    function paRender() {
+      const hasRows = PA.rows.length > 0;
+      $('#pa-empty-state').classList.toggle('hidden', hasRows);
+      $('#pa-main').classList.toggle('hidden', !hasRows);
+      if (!hasRows) return;
+
+      // Source label
+      const fromMatch = !PA.fromPaste && S.matchResults && S.matchResults.deduped.length > 0;
+      $('#pa-source-label').textContent = fromMatch ? '✓ Loaded from match results' : '✓ Loaded from pasted CSV';
+      $('#pa-row-count').textContent = `${PA.rows.length} cards`;
+      $('#pa-reload-btn').style.display = fromMatch ? '' : 'none';
+
+      // No-ID note
+      $('#pa-no-id-note').classList.toggle('hidden', PA.hasTcgIds);
+
+      paUpdateTable();
+    }
+
+    function paOnSlider(val) {
+      PA.pct = parseInt(val, 10);
+      paUpdateControls();
+      paUpdateTable();
+    }
+
+    function paSetRound(mode) {
+      PA.round = mode;
+      document.querySelectorAll('.pa-round-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.round === mode);
+      });
+      paUpdateTable();
+    }
+
+    function paUpdate() {
+      PA.pct     = parseInt($('pa-slider').value, 10) || 100;
+      PA.floor   = parseFloat($('pa-floor').value) || 0;
+      PA.ceiling = $('pa-ceiling').value.trim() === '' ? null : (parseFloat($('pa-ceiling').value) || null);
+      paUpdateControls();
+      paUpdateTable();
+    }
+
+    function paUpdateControls() {
+      const pct = PA.pct;
+      const readout = $('#pa-readout');
+      readout.classList.remove('positive','negative','neutral');
+      if (pct === 100) {
+        readout.textContent = 'at market price';
+        readout.classList.add('neutral');
+      } else if (pct < 100) {
+        readout.textContent = pct + '% of market';
+        readout.classList.add('negative');
+      } else {
+        readout.textContent = pct + '% of market';
+        readout.classList.add('positive');
+      }
+      // Metric card
+      const metricPct = $('#pa-metric-pct');
+      const metricSub = $('#pa-metric-pct-sub');
+      metricPct.textContent = pct + '%';
+      metricPct.style.color = pct > 100 ? 'var(--success)' : pct < 100 ? 'var(--error)' : 'var(--text-secondary)';
+      metricSub.textContent = pct === 100 ? 'at market price' : pct > 100 ? 'above market' : 'below market';
+    }
+
+    function paUpdateTable() {
+      if (!PA.rows.length) return;
+
+      PA.floor   = parseFloat($('pa-floor').value) || 0;
+      PA.ceiling = $('pa-ceiling').value.trim() === '' ? null : (parseFloat($('pa-ceiling').value) || null);
+
+      let totalMarket = 0;
+      let totalNew    = 0;
+      let skipped     = 0;
+      let hasSkipped  = false;
+
+      const tbodyHtml = PA.rows.map(row => {
+        const market = parseFloat(row.marketPrice);
+        if (!row.marketPrice || isNaN(market) || market <= 0) {
+          hasSkipped = true;
+          skipped++;
+          return '';
+        }
+        const newPrice = paComputePrice(row.marketPrice);
+        if (newPrice === null) { hasSkipped = true; skipped++; return ''; }
+
+        const diff = Math.round((newPrice - market) * 100) / 100;
+        let changeBadge;
+        if (Math.abs(diff) < 0.005) {
+          changeBadge = `<span class="pa-change-badge flat">no change</span>`;
+        } else if (diff > 0) {
+          changeBadge = `<span class="pa-change-badge up">+$${diff.toFixed(2)}</span>`;
+        } else {
+          changeBadge = `<span class="pa-change-badge down">-$${Math.abs(diff).toFixed(2)}</span>`;
+        }
+
+        totalMarket += market;
+        totalNew    += newPrice;
+
+        return `<tr>
+          <td style="max-width:200px;color:var(--text)">${esc(row.name)}</td>
+          <td style="max-width:140px;font-size:11px">${esc(row.set)}</td>
+          <td>${esc(row.condition)}</td>
+          <td style="color:${row.printing==='Foil'?'var(--warning)':'var(--text-muted)'}">${esc(row.printing || 'Normal')}</td>
+          <td style="text-align:right;font-family:monospace">$${market.toFixed(2)}</td>
+          <td style="text-align:right;font-family:monospace;font-weight:600;color:var(--text)">$${newPrice.toFixed(2)}</td>
+          <td style="text-align:right">${changeBadge}</td>
+        </tr>`;
+      }).join('');
+
+      totalMarket = Math.round(totalMarket * 100) / 100;
+      totalNew    = Math.round(totalNew    * 100) / 100;
+      const netDiff   = Math.round((totalNew - totalMarket) * 100) / 100;
+      const rowCount  = PA.rows.length - skipped;
+
+      const totalRow = rowCount > 0 ? `<tr class="pa-totals-row">
+        <td colspan="4">Total (${rowCount} card${rowCount !== 1 ? 's' : ''})</td>
+        <td style="text-align:right;font-family:monospace">$${totalMarket.toFixed(2)}</td>
+        <td style="text-align:right;font-family:monospace">$${totalNew.toFixed(2)}</td>
+        <td style="text-align:right">
+          ${Math.abs(netDiff) < 0.005
+            ? '<span class="pa-change-badge flat">no change</span>'
+            : netDiff > 0
+              ? `<span class="pa-change-badge up">+$${netDiff.toFixed(2)}</span>`
+              : `<span class="pa-change-badge down">-$${Math.abs(netDiff).toFixed(2)}</span>`}
+        </td>
+      </tr>` : '';
+
+      $('#pa-table-body').innerHTML = tbodyHtml + totalRow;
+
+      // Update impact metric
+      const impactEl    = $('#pa-metric-impact');
+      const impactSubEl = $('#pa-metric-impact-sub');
+      if (rowCount === 0) {
+        impactEl.textContent = '—';
+        impactEl.style.color = 'var(--text-secondary)';
+        impactSubEl.textContent = '';
+      } else {
+        const sign = netDiff >= 0 ? '+' : '';
+        impactEl.textContent = sign + '$' + Math.abs(netDiff).toFixed(2);
+        impactEl.style.color = netDiff > 0.005 ? 'var(--success)' : netDiff < -0.005 ? 'var(--error)' : 'var(--text-secondary)';
+        impactSubEl.textContent = `vs. market across ${rowCount} card${rowCount !== 1 ? 's' : ''}`;
+      }
+
+      $('#pa-no-market-note').classList.toggle('hidden', !hasSkipped);
+    }
+
+    function paExport() {
+      const today = new Date();
+      const dateStr = today.getFullYear() + '-'
+        + String(today.getMonth() + 1).padStart(2, '0') + '-'
+        + String(today.getDate()).padStart(2, '0');
+      const filename = `goblin_prices_${dateStr}.csv`;
+
+      const exportable = PA.rows.filter(r => r.marketPrice && !isNaN(parseFloat(r.marketPrice)) && parseFloat(r.marketPrice) > 0);
+      if (!exportable.length) { alert('No rows with valid market prices to export.'); return; }
+
+      if (PA.hasTcgIds) {
+        // Full TCGPlayer format with IDs
+        const rows = exportable.map(r => {
+          const newPrice = paComputePrice(r.marketPrice);
+          return {
+            'TCGplayer Id':        r.tcgId,
+            'Product Name':        r.name,
+            'Set Name':            r.set,
+            'Number':              r.number,
+            'Condition':           r.condition,
+            'Printing':            r.printing || 'Normal',
+            'Market Price':        parseFloat(r.marketPrice).toFixed(2),
+            'TCG Marketplace Price': newPrice !== null ? newPrice.toFixed(2) : '',
+            'Add to Quantity':     0,
+          };
+        });
+        dlFile(Papa.unparse(rows, {
+          columns: ['TCGplayer Id','Product Name','Set Name','Number','Condition','Printing','Market Price','TCG Marketplace Price','Add to Quantity'],
+        }), filename);
+      } else {
+        // No IDs — omit ID column, note in output
+        const rows = exportable.map(r => {
+          const newPrice = paComputePrice(r.marketPrice);
+          return {
+            'Product Name':          r.name,
+            'Set Name':              r.set,
+            'Condition':             r.condition,
+            'Printing':              r.printing || 'Normal',
+            'Market Price':          parseFloat(r.marketPrice).toFixed(2),
+            'TCG Marketplace Price': newPrice !== null ? newPrice.toFixed(2) : '',
+          };
+        });
+        dlFile(Papa.unparse(rows, {
+          columns: ['Product Name','Set Name','Condition','Printing','Market Price','TCG Marketplace Price'],
+        }), filename);
+      }
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────
     function $(id) { return document.getElementById(id.charAt(0) === '#' ? id.slice(1) : id); }
 
     function esc(s) {
-      return String(s)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     function showErr(n, msg) {
@@ -1697,7 +2475,6 @@
     }
 
     function fileInfoHtml(name, count, onReset) {
-      // onReset is a callback — store it temporarily so inline onclick can reach it
       const fnKey = '_reset_' + Date.now();
       window[fnKey] = () => { onReset(); delete window[fnKey]; };
       return `<div class="file-info">
