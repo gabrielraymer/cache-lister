@@ -1729,7 +1729,9 @@
       if (exact) return exact;
       const fuzzy = candidates.find(r => setsMatch(r['Set Name'], sellerSet));
       if (fuzzy) return fuzzy;
-      if (candidates.length === 1) return candidates[0];
+      // Only use single-candidate fallback when no set was specified — if a set was given but
+      // didn't match, we'd be silently matching a card from a different set (causes doubled qty).
+      if (!ns && candidates.length === 1) return candidates[0];
       return null;
     }
 
