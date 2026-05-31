@@ -1851,13 +1851,36 @@
       }
 
       const byId = new Map();
+      const mergeLog = new Map(); // TCGplayer Id → { name, set, rows: [{qty, sellerSet, sellerNum}] }
       for (const m of matched) {
         const id = m.catalogRow['TCGplayer Id'];
-        if (byId.has(id)) byId.get(id).quantity += m.quantity;
-        else byId.set(id, { ...m });
+        if (byId.has(id)) {
+          byId.get(id).quantity += m.quantity;
+          const log = mergeLog.get(id);
+          const cm2 = S.colMap;
+          log.rows.push({
+            qty:       m.quantity,
+            sellerSet: cm2.set    ? (m.sellerRow[cm2.set]    || '') : '',
+            sellerNum: cm2.number ? (m.sellerRow[cm2.number] || '') : '',
+          });
+        } else {
+          byId.set(id, { ...m });
+          const cm2 = S.colMap;
+          mergeLog.set(id, {
+            name: m.catalogRow['Product Name'] || '?',
+            set:  m.catalogRow['Set Name']     || '?',
+            num:  m.catalogRow['Number']       || '',
+            rows: [{
+              qty:       m.quantity,
+              sellerSet: cm2.set    ? (m.sellerRow[cm2.set]    || '') : '',
+              sellerNum: cm2.number ? (m.sellerRow[cm2.number] || '') : '',
+            }],
+          });
+        }
       }
-      const deduped    = [...byId.values()];
-      const mergedDups = matched.length - deduped.length;
+      const deduped      = [...byId.values()];
+      const mergedDups   = matched.length - deduped.length;
+      const mergedGroups = [...mergeLog.values()].filter(g => g.rows.length > 1);
       const total = matched.length + pendingReview.length + unmatched.length;
 
       const setResolution = [];
@@ -1878,8 +1901,8 @@
         return row ? (row['Set Name'] || s) : s;
       }).sort((a, b) => a.localeCompare(b));
 
-      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets };
-      showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets);
+      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets };
+      showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets);
 
       // Auto-switch to Review tab and update pip
       const pip = $('#review-pip');
@@ -1889,7 +1912,7 @@
     }
 
     // ── Results UI ─────────────────────────────────────────────────────────
-    function showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution = [], catalogSets = []) {
+    function showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution = [], catalogSets = []) {
       const el = $('#results');
       el.classList.remove('hidden');
       $('#review-empty-state').classList.add('hidden');
@@ -2002,13 +2025,14 @@
           <div class="rcard good"><div class="rcard-val">${deduped.length}</div><div class="rcard-label">Matched</div></div>
           ${hasPending ? `<div class="rcard warn"><div class="rcard-val">${pendingReview.length}</div><div class="rcard-label">Needs Review</div></div>` : ''}
           <div class="rcard ${hasUnmatched ? 'warn' : 'good'}"><div class="rcard-val">${unmatched.length}</div><div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div></div>
-          ${mergedDups > 0 ? `<div class="rcard good" title="Your card list had ${mergedDups} row(s) that mapped to the same catalog entry — their quantities were summed into one output row. This is normal if you listed the same card twice."><div class="rcard-val">${mergedDups}</div><div class="rcard-label">Rows consolidated ✓</div></div>` : ''}
+          ${mergedDups > 0 ? `<div class="rcard good" style="cursor:pointer;" onclick="document.getElementById('merge-details').classList.toggle('hidden')" title="Click to see which rows were consolidated"><div class="rcard-val">${mergedDups}</div><div class="rcard-label">Consolidated ▾</div></div>` : ''}
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" ${hasPending ? 'disabled title="Finish reviewing before downloading"' : ''} onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
           <button class="btn btn-ghost" onclick="switchTab('price-adjuster')" title="Adjust prices before exporting">✦ Price Adjuster</button>
           <button class="btn btn-ghost btn-float-reset" onclick="resetAll()">↩ Start Over</button>
         </div>
+        ${mergedDups > 0 ? buildMergeDetailsHtml(mergedGroups) : ''}
         ${reviewHtml}
         ${unmatchedTableHtml}
         ${buildSetMappingHtml(setResolution, catalogSets)}
@@ -2018,6 +2042,41 @@
         const reviewEl = document.getElementById('review-section');
         if (reviewEl) reviewEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    }
+
+    function buildMergeDetailsHtml(mergedGroups) {
+      const rows = mergedGroups.map(g => {
+        const rowChips = g.rows.map(r => {
+          const parts = [];
+          if (r.sellerSet) parts.push(`<span style="font-family:monospace">${esc(r.sellerSet)}</span>`);
+          if (r.sellerNum) parts.push(`#${esc(r.sellerNum)}`);
+          parts.push(`qty&nbsp;${r.qty}`);
+          return `<span style="display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text-secondary);margin:2px 3px 2px 0">${parts.join(' · ')}</span>`;
+        }).join('');
+        const totalQty = g.rows.reduce((s, r) => s + r.qty, 0);
+        const cCode = setCodeFromName(g.set);
+        const setLabel = cCode ? `<span style="font-family:monospace;color:var(--text-secondary)">${esc(cCode)}</span> <span style="color:var(--text-muted);font-size:11px">${esc(g.set)}</span>` : `<span style="color:var(--text-muted);font-size:11px">${esc(g.set)}</span>`;
+        const numLabel = g.num ? ` · <span style="font-family:monospace;color:var(--text-muted)">#${esc(g.num)}</span>` : '';
+        return `<tr>
+          <td style="font-weight:500">${esc(g.name)}</td>
+          <td>${setLabel}${numLabel}</td>
+          <td>${rowChips}</td>
+          <td style="font-family:monospace;color:var(--success);font-weight:600">→ ${totalQty}</td>
+        </tr>`;
+      }).join('');
+      return `
+        <div id="merge-details" class="hidden unmatched-section" style="margin-top:0;margin-bottom:14px;">
+          <div class="unmatched-header">
+            <div class="section-label" style="margin:0;">Consolidated Rows <span class="badge" style="background:rgba(34,197,94,.12);color:var(--success);border-color:rgba(34,197,94,.3)">${mergedGroups.length}</span></div>
+            <div style="font-size:12px;color:var(--text-muted)">These cards had multiple rows in your list — quantities were summed.</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Card</th><th>Catalog Set</th><th>Your rows</th><th>Final qty</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
     }
 
     function buildSetMappingHtml(setResolution, catalogSets) {
@@ -2080,11 +2139,11 @@
     }
 
     function rerenderResults() {
-      const { deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets } = S.matchResults;
+      const { deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets } = S.matchResults;
       // Update pip
       const pip = $('#review-pip');
       pip.textContent = deduped.length + (pendingReview.length ? '+' : '');
-      showResults(deduped, pendingReview, unmatched, mergedDups, total, setResolution, catalogSets);
+      showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets);
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
