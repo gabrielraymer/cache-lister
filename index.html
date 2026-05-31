@@ -1436,6 +1436,12 @@
       return ['yes','true','1','foil'].includes(s) ? 'Foil' : 'Normal';
     }
     function normSet(s)  { if (!s) return ''; return String(s).toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim(); }
+    function setCodeFromName(name) {
+      if (!name || !S.setsMap) return '';
+      const lc = name.toLowerCase();
+      for (const [code, n] of S.setsMap) { if (n.toLowerCase() === lc) return code.toUpperCase(); }
+      return '';
+    }
     function normNum(v)  { if (!v) return ''; return String(v).trim().toLowerCase(); }
     function normName(v) { if (!v) return ''; return String(v).trim().toLowerCase(); }
 
@@ -1823,6 +1829,7 @@
       const { catalog, sellerList, colMap: cm } = S;
       const idx = buildIndex(catalog);
       const setsMap = await scryfallSetsPromise;
+      S.setsMap = setsMap;
       const catalogSetIndex = buildCatalogSetIndex(catalog);
 
       const matched       = [];
@@ -1899,18 +1906,25 @@
           const reviewRows = pendingReview.map((item, i) => {
             const sName = cm.name      ? (item.sellerRow[cm.name]      || '—') : '—';
             const sSet  = cm.set       ? (item.sellerRow[cm.set]       || '—') : '—';
+            const sNum  = cm.number    ? (item.sellerRow[cm.number]    || '—') : '—';
             const sCond = cm.condition ? (item.sellerRow[cm.condition] || '—') : '—';
             const sQty  = cm.quantity  ? (item.sellerRow[cm.quantity]  || '—') : '—';
             const cName = item.catalogRow['Product Name'] || '—';
             const cSet  = item.catalogRow['Set Name']     || '—';
             const cNum  = item.catalogRow['Number']       || '—';
+            const cCode = setCodeFromName(cSet);
+            const cSetDisplay = cCode
+              ? `<span style="font-family:monospace;font-weight:600;color:var(--text-secondary)">${esc(cCode)}</span><span style="color:var(--text-muted);font-size:10px;margin-left:4px">${esc(cSet)}</span>`
+              : `<span style="color:var(--text-muted);font-size:11px">${esc(cSet)}</span>`;
             return `<tr>
-              <td>${esc(sName)}</td><td style="color:var(--text-muted)">${esc(sSet)}</td>
+              <td>${esc(sName)}</td>
+              <td style="color:var(--text-muted)">${esc(sSet)}</td>
+              <td style="font-family:monospace;color:var(--text-muted)">${esc(sNum)}</td>
               <td>${esc(sCond)}</td><td>${esc(sQty)}</td>
               <td class="review-arrow">→</td>
               <td style="color:var(--success)">${esc(cName)}</td>
-              <td style="color:var(--text-muted);font-size:11px">${esc(cSet)}</td>
-              <td style="color:var(--text-muted)">${esc(cNum)}</td>
+              <td style="white-space:nowrap">${cSetDisplay}</td>
+              <td style="font-family:monospace;color:var(--text-muted)">${esc(cNum)}</td>
               <td><div style="display:flex;gap:5px;">
                 <button class="btn btn-primary" style="padding:3px 10px;font-size:11px;" onclick="approveReview(${i})">✓</button>
                 <button class="btn btn-ghost"   style="padding:3px 9px;font-size:11px;"  onclick="rejectReview(${i})">✕</button>
@@ -1929,7 +1943,7 @@
               <div class="table-wrap">
                 <table>
                   <thead><tr>
-                    <th>Your Card</th><th>Your Set</th><th>Cond</th><th>Qty</th>
+                    <th>Your Card</th><th>Your Set</th><th>Your #</th><th>Cond</th><th>Qty</th>
                     <th></th><th>Matched As</th><th>Catalog Set</th><th>#</th><th></th>
                   </tr></thead>
                   <tbody>${reviewRows}</tbody>
@@ -1988,7 +2002,7 @@
           <div class="rcard good"><div class="rcard-val">${deduped.length}</div><div class="rcard-label">Matched</div></div>
           ${hasPending ? `<div class="rcard warn"><div class="rcard-val">${pendingReview.length}</div><div class="rcard-label">Needs Review</div></div>` : ''}
           <div class="rcard ${hasUnmatched ? 'warn' : 'good'}"><div class="rcard-val">${unmatched.length}</div><div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div></div>
-          <div class="rcard neutral"><div class="rcard-val">${mergedDups}</div><div class="rcard-label">Dupes merged</div></div>
+          ${mergedDups > 0 ? `<div class="rcard good" title="Your card list had ${mergedDups} row(s) that mapped to the same catalog entry — their quantities were summed into one output row. This is normal if you listed the same card twice."><div class="rcard-val">${mergedDups}</div><div class="rcard-label">Rows consolidated ✓</div></div>` : ''}
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" ${hasPending ? 'disabled title="Finish reviewing before downloading"' : ''} onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
