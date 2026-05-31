@@ -1851,9 +1851,9 @@
       }
 
       const byId = new Map();
-      const mergeLog = new Map(); // TCGplayer Id → { name, set, rows: [{qty, sellerSet, sellerNum}] }
+      const mergeLog = new Map(); // key → { name, set, rows: [{qty, sellerSet, sellerNum}] }
       for (const m of matched) {
-        const id = m.catalogRow['TCGplayer Id'];
+        const id = `${m.catalogRow['TCGplayer Id']}||${(m.catalogRow['Condition'] || '').trim()}||${(m.catalogRow['Printing'] || 'Normal').trim()}`;
         if (byId.has(id)) {
           byId.get(id).quantity += m.quantity;
           const log = mergeLog.get(id);
