@@ -1844,7 +1844,7 @@
         const r = matchRow(row, cm, idx, setsMap, catalogSetIndex);
         if (r.match) {
           if (r.needsReview) pendingReview.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, via: r.via });
-          else               matched.push({ catalogRow: r.match, quantity: qty, price });
+          else               matched.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row });
         } else {
           unmatched.push({ row, error: r.error, checks: r.checks });
         }
