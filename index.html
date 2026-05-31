@@ -2030,7 +2030,7 @@
           <div class="rcard good"><div class="rcard-val">${deduped.length}</div><div class="rcard-label">Matched</div></div>
           ${hasPending ? `<div class="rcard warn"><div class="rcard-val">${pendingReview.length}</div><div class="rcard-label">Needs Review</div></div>` : ''}
           <div class="rcard ${hasUnmatched ? 'warn' : 'good'}"><div class="rcard-val">${unmatched.length}</div><div class="rcard-label">Unmatched${hasUnmatched ? ' ⚠' : ' ✓'}</div></div>
-          ${mergedDups > 0 ? `<div class="rcard good" style="cursor:pointer;" onclick="document.getElementById('merge-details').classList.toggle('hidden')" title="Click to see which rows were consolidated"><div class="rcard-val">${mergedDups}</div><div class="rcard-label">Consolidated ▾</div></div>` : ''}
+          ${mergedDups > 0 ? `<div class="rcard good" style="cursor:pointer;" onclick="toggleMergeDetails(this)" title="Click to see which rows were consolidated"><div class="rcard-val">${mergedDups}</div><div class="rcard-label" id="merge-toggle-label">Consolidated ▾</div></div>` : ''}
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" ${hasPending ? 'disabled title="Finish reviewing before downloading"' : ''} onclick="dlOutput()">⬇ Download TCGPlayer Import CSV</button>
@@ -2142,6 +2142,15 @@
       }
       S.matchResults.pendingReview = [];
       rerenderResults();
+    }
+
+    function toggleMergeDetails(card) {
+      const panel = document.getElementById('merge-details');
+      if (!panel) return;
+      const isHidden = panel.classList.toggle('hidden');
+      const label = document.getElementById('merge-toggle-label');
+      if (label) label.textContent = isHidden ? 'Consolidated ▾' : 'Consolidated ▴';
+      if (!isHidden) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function rerenderResults() {
