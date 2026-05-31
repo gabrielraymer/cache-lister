@@ -1836,7 +1836,8 @@
       const pendingReview = [];
       const unmatched     = [];
 
-      for (const row of sellerList) {
+      for (let rowIdx = 0; rowIdx < sellerList.length; rowIdx++) {
+        const row = sellerList[rowIdx];
         const rawQty = (cm.quantity ? row[cm.quantity] : '') || '0';
         const qty    = parseInt(rawQty, 10) || 0;
         const price  = (cm.price ? (row[cm.price] || '') : '').trim();
@@ -1844,7 +1845,7 @@
         const r = matchRow(row, cm, idx, setsMap, catalogSetIndex);
         if (r.match) {
           if (r.needsReview) pendingReview.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, via: r.via });
-          else               matched.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row });
+          else               matched.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, csvRow: rowIdx + 2 });
         } else {
           unmatched.push({ row, error: r.error, checks: r.checks });
         }
@@ -1860,6 +1861,7 @@
           const cm2 = S.colMap;
           log.rows.push({
             qty:       m.quantity,
+            csvRow:    m.csvRow,
             sellerSet: cm2.set    ? (m.sellerRow[cm2.set]    || '') : '',
             sellerNum: cm2.number ? (m.sellerRow[cm2.number] || '') : '',
           });
@@ -1872,6 +1874,7 @@
             num:  m.catalogRow['Number']       || '',
             rows: [{
               qty:       m.quantity,
+              csvRow:    m.csvRow,
               sellerSet: cm2.set    ? (m.sellerRow[cm2.set]    || '') : '',
               sellerNum: cm2.number ? (m.sellerRow[cm2.number] || '') : '',
             }],
@@ -2048,6 +2051,7 @@
       const rows = mergedGroups.map(g => {
         const rowChips = g.rows.map(r => {
           const parts = [];
+          if (r.csvRow) parts.push(`<span style="color:var(--text-muted)">Row&nbsp;${r.csvRow}</span>`);
           if (r.sellerSet) parts.push(`<span style="font-family:monospace">${esc(r.sellerSet)}</span>`);
           if (r.sellerNum) parts.push(`#${esc(r.sellerNum)}`);
           parts.push(`qty&nbsp;${r.qty}`);
