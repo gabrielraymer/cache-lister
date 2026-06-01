@@ -1726,15 +1726,24 @@
       return normSet(name).split(' ').filter(Boolean).map(w => w[0]).join('');
     }
 
+    function tokenOverlap(a, b) {
+      const ta = new Set(a.split(' ').filter(Boolean));
+      const tb = new Set(b.split(' ').filter(Boolean));
+      if (!ta.size || !tb.size) return 0;
+      let n = 0;
+      for (const t of ta) if (tb.has(t)) n++;
+      return n / Math.max(ta.size, tb.size);
+    }
+
     function setsMatch(catalogSetName, sellerSet) {
       const cat  = normSet(catalogSetName);
       const sell = normSet(sellerSet);
       if (!sell) return true;
-      // cat.includes(sell): "adventures in the forgotten realms commander" contains "afc" resolved name
-      // Removed sell.includes(cat) — too broad: "tarkir dragonstorm commander".includes("tarkir dragonstorm")
-      // would cause TDC to match TDM cards with same collector number.
       if (cat === sell || cat.includes(sell)) return true;
       if (sell.length >= 2 && sell.length <= 6 && setInitials(catalogSetName) === sell) return true;
+      // Token overlap handles word-order differences between Scryfall and TCGPlayer naming:
+      // Scryfall "Tarkir Dragonstorm Commander" vs TCGPlayer "Commander Tarkir Dragonstorm" → 100% overlap
+      if (tokenOverlap(cat, sell) >= 0.8) return true;
       return false;
     }
 
