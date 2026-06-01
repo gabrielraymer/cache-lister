@@ -1802,8 +1802,8 @@
           if (exactSet) return { match: exactSet, via: 'name+number+set+cond', needsReview: false };
           const fuzzySet = candidates.find(r => setsMatch(r['Set Name'], rawSet));
           if (fuzzySet) return { match: fuzzySet, via: 'name+number+set+cond', needsReview: false };
-          // No set was provided and only one candidate → high confidence, auto-match
-          if (!ns && candidates.length === 1) return { match: candidates[0], via: 'name+number+cond', needsReview: false };
+          // Only one candidate → high confidence, auto-match regardless of set
+          if (candidates.length === 1) return { match: candidates[0], via: 'name+number+cond', needsReview: false };
           // Set was given but didn't verify, OR multiple candidates without set → review queue
           return {
             match: candidates[0],
