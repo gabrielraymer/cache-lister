@@ -1904,10 +1904,12 @@
           const log = mergeLog.get(id);
           const cm2 = S.colMap;
           log.rows.push({
-            qty:       m.quantity,
-            csvRow:    m.csvRow,
-            sellerSet: cm2.set    ? (m.sellerRow[cm2.set]    || '') : '',
-            sellerNum: cm2.number ? (m.sellerRow[cm2.number] || '') : '',
+            qty:        m.quantity,
+            csvRow:     m.csvRow,
+            sellerName: cm2.name      ? (m.sellerRow[cm2.name]      || '') : '',
+            sellerSet:  cm2.set       ? (m.sellerRow[cm2.set]       || '') : '',
+            sellerNum:  cm2.number    ? (m.sellerRow[cm2.number]    || '') : '',
+            sellerCond: cm2.condition ? (m.sellerRow[cm2.condition] || '') : '',
           });
         } else {
           byId.set(id, { ...m });
@@ -1917,10 +1919,12 @@
             set:  m.catalogRow['Set Name']     || '?',
             num:  m.catalogRow['Number']       || '',
             rows: [{
-              qty:       m.quantity,
-              csvRow:    m.csvRow,
-              sellerSet: cm2.set    ? (m.sellerRow[cm2.set]    || '') : '',
-              sellerNum: cm2.number ? (m.sellerRow[cm2.number] || '') : '',
+              qty:        m.quantity,
+              csvRow:     m.csvRow,
+              sellerName: cm2.name      ? (m.sellerRow[cm2.name]      || '') : '',
+              sellerSet:  cm2.set       ? (m.sellerRow[cm2.set]       || '') : '',
+              sellerNum:  cm2.number    ? (m.sellerRow[cm2.number]    || '') : '',
+              sellerCond: cm2.condition ? (m.sellerRow[cm2.condition] || '') : '',
             }],
           });
         }
@@ -2114,7 +2118,15 @@
           if (r.sellerSet) parts.push(`<span style="font-family:monospace">${esc(r.sellerSet)}</span>`);
           if (r.sellerNum) parts.push(`#${esc(r.sellerNum)}`);
           parts.push(`qty&nbsp;${r.qty}`);
-          return `<span style="display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text-secondary);margin:2px 3px 2px 0">${parts.join(' · ')}</span>`;
+          const tipLines = [];
+          if (r.csvRow)     tipLines.push(`Row: ${r.csvRow}`);
+          if (r.sellerName) tipLines.push(`Name: ${r.sellerName}`);
+          if (r.sellerSet)  tipLines.push(`Set: ${r.sellerSet}`);
+          if (r.sellerNum)  tipLines.push(`#: ${r.sellerNum}`);
+          if (r.sellerCond) tipLines.push(`Condition: ${r.sellerCond}`);
+          tipLines.push(`Qty: ${r.qty}`);
+          const title = tipLines.join('\n');
+          return `<span title="${esc(title)}" style="display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:11px;color:var(--text-secondary);margin:2px 3px 2px 0;cursor:default">${parts.join(' · ')}</span>`;
         }).join('');
         const totalQty = g.rows.reduce((s, r) => s + r.qty, 0);
         const cCode = setCodeFromName(g.set);
