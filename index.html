@@ -1442,7 +1442,7 @@
       for (const [code, n] of S.setsMap) { if (n.toLowerCase() === lc) return code.toUpperCase(); }
       return '';
     }
-    function normNum(v)  { if (!v) return ''; return String(v).trim().toLowerCase(); }
+    function normNum(v)  { if (!v) return ''; const s = String(v).trim(); return s.replace(/^0+/, '') || '0'; }
     function normName(v) { if (!v) return ''; return String(v).trim().toLowerCase(); }
 
     // ── Drag & drop ────────────────────────────────────────────────────────
@@ -1681,32 +1681,45 @@
 
     // ── Catalog index ──────────────────────────────────────────────────────
     function buildIndex(rows) {
-      const byNumCP  = new Map();
-      const byNameCP = new Map();
-      const byName   = new Set();
-      const bySets   = new Set();
+      // Primary index: (baseName or fullName) + num + cond + print → [catalog rows]
+      // baseName = everything before the first "(" in Product Name
+      // fullName = the entire Product Name (for cards like "Forest (0286)" where parens are part of the name)
+      const byNameNumCP = new Map();
+      const byBaseName  = new Set(); // all base names + full names — used for diagnostics
+      const bySets      = new Set();
+
       for (const row of rows) {
+        const productName = row['Product Name'] || '';
+        const parenIdx = productName.indexOf('(');
+        const basePart = parenIdx >= 0 ? productName.slice(0, parenIdx) : productName;
+        const baseNorm = normName(basePart);
+        const fullNorm = normName(productName);
+
         const num  = normNum(row['Number']);
         const rawCond = (row['Condition'] || '').trim();
         const hasFoilCond = condHasFoil(rawCond);
         const cond  = hasFoilCond ? (mapCond(rawCond) || rawCond) : rawCond;
         const print = hasFoilCond ? 'Foil' : (row['Printing'] || 'Normal').trim();
-        const name  = normName(row['Product Name']);
         const set   = normSet(row['Set Name']);
-        if (name) byName.add(name);
-        if (set)  bySets.add(set);
+
+        if (baseNorm) byBaseName.add(baseNorm);
+        if (fullNorm && fullNorm !== baseNorm) byBaseName.add(fullNorm);
+        if (set) bySets.add(set);
+
         if (num) {
-          const k = `${num}||${cond}||${print}`;
-          if (!byNumCP.has(k)) byNumCP.set(k, []);
-          byNumCP.get(k).push(row);
-        }
-        if (name) {
-          const k = `${name}||${cond}||${print}`;
-          if (!byNameCP.has(k)) byNameCP.set(k, []);
-          byNameCP.get(k).push(row);
+          if (baseNorm) {
+            const k = `${baseNorm}||${num}||${cond}||${print}`;
+            if (!byNameNumCP.has(k)) byNameNumCP.set(k, []);
+            byNameNumCP.get(k).push(row);
+          }
+          if (fullNorm && fullNorm !== baseNorm) {
+            const k = `${fullNorm}||${num}||${cond}||${print}`;
+            if (!byNameNumCP.has(k)) byNameNumCP.set(k, []);
+            byNameNumCP.get(k).push(row);
+          }
         }
       }
-      return { byNumCP, byNameCP, byName, bySets };
+      return { byNameNumCP, byBaseName, bySets };
     }
 
     function setInitials(name) {
@@ -1717,7 +1730,10 @@
       const cat  = normSet(catalogSetName);
       const sell = normSet(sellerSet);
       if (!sell) return true;
-      if (cat === sell || cat.includes(sell) || sell.includes(cat)) return true;
+      // cat.includes(sell): "adventures in the forgotten realms commander" contains "afc" resolved name
+      // Removed sell.includes(cat) — too broad: "tarkir dragonstorm commander".includes("tarkir dragonstorm")
+      // would cause TDC to match TDM cards with same collector number.
+      if (cat === sell || cat.includes(sell)) return true;
       if (sell.length >= 2 && sell.length <= 6 && setInitials(catalogSetName) === sell) return true;
       return false;
     }
@@ -1745,59 +1761,79 @@
       const printing = mapFoil(rawFoil) === 'Normal' && !cm.foil && condHasFoil(rawCond)
         ? 'Foil' : mapFoil(rawFoil);
       const num  = normNum(rawNum);
-      const name = normName(rawName);
+
+      // Seller name → derive both the full norm and the base norm (before any "(")
+      const nameFull = normName(rawName);
+      const nameBase = normName(rawName.replace(/\s*\(.*$/, ''));
+
+      // Diagnostic helper: check if seller's base name exists anywhere in catalog
+      const nameInCatalog = (nameBase && idx.byBaseName.has(nameBase)) ||
+                            (nameFull && idx.byBaseName.has(nameFull));
 
       if (!cond) {
         return {
           match: null,
           checks: {
             condition: { ok: false, label: `"${rawCond || '(empty)'}" — use NM, LP, MP, HP, DMG` },
-            name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
+            name: { ok: nameInCatalog, label: rawName || '(empty)' },
             set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
           },
           error: `Unknown condition "${rawCond}"`,
         };
       }
 
-      if (num) {
-        const k = `${num}||${cond}||${printing}`;
-        const m = bestSetMatch(idx.byNumCP.get(k), rawSet);
-        if (m) return { match: m, via: 'number+set+cond+print', needsReview: false };
-      }
-      if (num && name) {
-        const k = `${num}||${cond}||${printing}`;
-        const candidates = idx.byNumCP.get(k) || [];
-        const m = candidates.find(r => normName(r['Product Name']) === name);
-        if (m) return { match: m, via: 'number+name+cond+print', needsReview: false };
-      }
-      if (name) {
-        const k = `${name}||${cond}||${printing}`;
-        const m = bestSetMatch(idx.byNameCP.get(k), rawSet);
-        if (m) return { match: m, via: 'name+set+cond+print', needsReview: true };
-      }
-      if (name) {
-        const codeOnly = normSet(row[cm.set] || '').replace(/\s/g, '');
-        if (codeOnly.length >= 2 && codeOnly.length <= 6) {
-          const k = `${name}||${cond}||${printing}`;
-          const all = idx.byNameCP.get(k) || [];
-          if (all.length === 1) return { match: all[0], via: 'name+cond+print (set-agnostic)', needsReview: true };
+      // ── Priority 1+2: Name + Number (must both match) ──────────────────────
+      if (num && (nameFull || nameBase)) {
+        const seen = new Set();
+        const candidates = [];
+        for (const nameKey of [nameFull, ...(nameBase !== nameFull ? [nameBase] : [])]) {
+          if (!nameKey) continue;
+          const k = `${nameKey}||${num}||${cond}||${printing}`;
+          for (const r of (idx.byNameNumCP.get(k) || [])) {
+            const id = r['TCGplayer Id'];
+            if (!seen.has(id)) { seen.add(id); candidates.push(r); }
+          }
+        }
+
+        if (candidates.length > 0) {
+          const ns = normSet(rawSet);
+          // ── Priority 3: Set verifies the match ────────────────────────────
+          const exactSet = candidates.find(r => normSet(r['Set Name']) === ns);
+          if (exactSet) return { match: exactSet, via: 'name+number+set+cond', needsReview: false };
+          const fuzzySet = candidates.find(r => setsMatch(r['Set Name'], rawSet));
+          if (fuzzySet) return { match: fuzzySet, via: 'name+number+set+cond', needsReview: false };
+          // No set was provided and only one candidate → high confidence, auto-match
+          if (!ns && candidates.length === 1) return { match: candidates[0], via: 'name+number+cond', needsReview: false };
+          // Set was given but didn't verify, OR multiple candidates without set → review queue
+          return {
+            match: candidates[0],
+            via: candidates.length > 1
+              ? `name+number+cond (${candidates.length} set options — verify set)`
+              : 'name+number+cond (set unverified)',
+            needsReview: true,
+            reviewCandidates: candidates,
+          };
         }
       }
 
+      // ── No match found ─────────────────────────────────────────────────────
       const desc = rawName || rawNum || '(unknown)';
       if (printing === 'Foil') {
-        const hasNonFoilInCatalog = !!(
-          (num && idx.byNumCP.get(`${num}||${cond}||Normal`)) ||
-          (name && idx.byNameCP.get(`${name}||${cond}||Normal`))
-        );
+        // Check if we have the non-foil version (helps diagnose missing foil export)
+        const hasNonFoil = !!(num && (nameFull || nameBase) && (() => {
+          for (const nk of [nameFull, nameBase]) {
+            if (nk && idx.byNameNumCP.get(`${nk}||${num}||${cond}||Normal`)) return true;
+          }
+          return false;
+        })());
         return {
           match: null,
           checks: {
             condition: { ok: true, label: cond },
-            name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
+            name: { ok: nameInCatalog, label: rawName || '(empty)' },
             set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
           },
-          error: hasNonFoilInCatalog
+          error: hasNonFoil
             ? `Foil version not in catalog for "${desc}" — your catalog has the non-foil product but not the foil. Re-export your TCGPlayer catalog and enable "Show foil products" to include foil variants.`
             : `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / Foil`,
         };
@@ -1807,10 +1843,10 @@
         match: null,
         checks: {
           condition: { ok: true, label: cond },
-          name: { ok: !!name && idx.byName.has(name), label: rawName || '(empty)' },
+          name: { ok: nameInCatalog, label: rawName || '(empty)' },
           set:  { ok: !!rawSet && idx.bySets.has(normSet(rawSet)), label: row[cm.set] || '(empty)' },
         },
-        error: `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond} / Non-foil`,
+        error: `No catalog match for "${desc}" — ${row[cm.set] || ''} / ${rawCond}`,
       };
     }
 
