@@ -1143,8 +1143,16 @@
       <div id="pa-empty-state" class="empty-state">
         <div class="empty-state-icon">💰</div>
         <h3>No inventory loaded</h3>
-        <p>Run a match in Step 1 to auto-load your matched inventory here, or paste a CSV below to use the Price Adjuster standalone.</p>
+        <p>Run a match in Step 1 to auto-load your matched inventory here, upload a TCGPlayer MyPricing CSV directly, or paste CSV data below.</p>
         <button class="btn btn-primary" onclick="switchTab('match')" style="margin-bottom:12px">Go to Step 1 — Match</button>
+        <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:14px;">— or load your TCGPlayer pricing file directly —</div>
+        <div style="max-width:520px;margin:0 auto;margin-bottom:14px;">
+          <label class="btn btn-ghost" style="width:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            📂 Upload TCGPlayer MyPricing CSV
+            <input type="file" accept=".csv" style="display:none" onchange="paLoadFromFileInput(this)">
+          </label>
+          <div id="pa-file-err" class="hidden" style="margin-top:8px;font-size:12px;color:var(--error);"></div>
+        </div>
         <div style="text-align:center;font-size:12px;color:var(--text-muted);margin-bottom:14px;">— or paste a CSV directly —</div>
         <div style="max-width:520px;margin:0 auto;">
           <textarea class="pa-paste-area" id="pa-paste-input" rows="5" placeholder="Paste CSV here — needs columns: Product Name, Set Name, Condition, Printing, Market Price (or TCG Market Price)"></textarea>
@@ -1163,7 +1171,11 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="paReloadFromMatch()" id="pa-reload-btn">↺ Reload from Match</button>
-            <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="paShowPastePanel()">⊕ Load from CSV</button>
+            <label class="btn btn-ghost" style="font-size:12px;padding:6px 13px;cursor:pointer;">
+              📂 Load MyPricing CSV
+              <input type="file" accept=".csv" style="display:none" onchange="paLoadFromFileInput(this)">
+            </label>
+            <button class="btn btn-ghost" style="font-size:12px;padding:6px 13px;" onclick="paShowPastePanel()">⊕ Paste CSV</button>
           </div>
         </div>
 
@@ -1570,7 +1582,7 @@
         number:    find('number','card#','card #','card number','collector number','collector #','no','#','num','col #','collectornum'),
         set:       find('set','set name','edition','expansion','set name (tcg)'),
         condition: find('condition','cond'),
-        quantity:  find('quantity','qty','count','amount','copies','add to quantity'),
+        quantity:  find('quantity','qty','count','amount','copies','total quantity','add to quantity'),
         foil:      find('foil','printing','finish','is foil'),
         price:     find('price','tcg price','list price','sell price','market price','tcg marketplace price','buy price','your price'),
       };
@@ -1879,13 +1891,15 @@
       const matched       = [];
       const pendingReview = [];
       const unmatched     = [];
+      let   zeroQtyCount  = 0;
 
       for (let rowIdx = 0; rowIdx < sellerList.length; rowIdx++) {
         const row = sellerList[rowIdx];
         const rawQty = (cm.quantity ? row[cm.quantity] : '') || '0';
-        const qty    = parseInt(rawQty, 10) || 0;
+        const parsedQty = parseInt(rawQty, 10) || 0;
+        const qty    = parsedQty > 0 ? parsedQty : 1;
+        if (parsedQty <= 0) zeroQtyCount++;
         const price  = (cm.price ? (row[cm.price] || '') : '').trim();
-        if (qty <= 0) continue;
         const r = matchRow(row, cm, idx, setsMap, catalogSetIndex);
         if (r.match) {
           if (r.needsReview) pendingReview.push({ catalogRow: r.match, quantity: qty, price, sellerRow: row, via: r.via, reviewCandidates: r.reviewCandidates || null });
@@ -1952,8 +1966,8 @@
         return row ? (row['Set Name'] || s) : s;
       }).sort((a, b) => a.localeCompare(b));
 
-      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets };
-      showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets);
+      S.matchResults = { deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets, zeroQtyCount };
+      showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets, zeroQtyCount);
 
       // Auto-switch to Review tab and update pip
       const pip = $('#review-pip');
@@ -1963,7 +1977,7 @@
     }
 
     // ── Results UI ─────────────────────────────────────────────────────────
-    function showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution = [], catalogSets = []) {
+    function showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution = [], catalogSets = [], zeroQtyCount = 0) {
       const el = $('#results');
       el.classList.remove('hidden');
       $('#review-empty-state').classList.add('hidden');
@@ -2098,6 +2112,7 @@
           <button class="btn btn-ghost" onclick="switchTab('price-adjuster')" title="Adjust prices before exporting">✦ Price Adjuster</button>
           <button class="btn btn-ghost btn-float-reset" onclick="resetAll()">↩ Start Over</button>
         </div>
+        ${zeroQtyCount > 0 ? `<div class="banner info" style="margin-top:12px">ℹ️ ${zeroQtyCount} row${zeroQtyCount > 1 ? 's' : ''} had quantity 0 (typical for TCGPlayer MyPricing exports) and were treated as qty 1.</div>` : ''}
         ${mergedDups > 0 ? buildMergeDetailsHtml(mergedGroups) : ''}
         ${reviewHtml}
         ${unmatchedTableHtml}
@@ -2230,11 +2245,11 @@
     }
 
     function rerenderResults() {
-      const { deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets } = S.matchResults;
+      const { deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets, zeroQtyCount } = S.matchResults;
       // Update pip
       const pip = $('#review-pip');
       pip.textContent = deduped.length + (pendingReview.length ? '+' : '');
-      showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets);
+      showResults(deduped, pendingReview, unmatched, mergedDups, mergedGroups, total, setResolution, catalogSets, zeroQtyCount);
     }
 
     // ── Downloads ──────────────────────────────────────────────────────────
@@ -2347,6 +2362,86 @@
       }
       PA.fromPaste = false;
       paLoadFromMatch();
+    }
+
+    function paLoadFromFileInput(input) {
+      const file = input.files && input.files[0];
+      const errEl = $('pa-file-err');
+      if (!errEl) return;
+      errEl.className = 'hidden';
+      errEl.textContent = '';
+      if (!file) return;
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        errEl.className = ''; errEl.textContent = 'Only CSV files are supported.'; return;
+      }
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: r => paLoadFromMyPricingData(r, errEl),
+        error: e => { errEl.className = ''; errEl.textContent = 'Failed to parse CSV: ' + e.message; },
+      });
+      // Reset input so the same file can be reloaded
+      input.value = '';
+    }
+
+    function paLoadFromMyPricingData(result, errEl) {
+      if (!result.data.length) {
+        if (errEl) { errEl.className = ''; errEl.textContent = 'File appears empty.'; }
+        return;
+      }
+      const fields = result.meta.fields || [];
+      const lc = fields.map(f => f.toLowerCase().trim());
+      const find = (...cands) => {
+        for (const c of cands) {
+          const i = lc.findIndex(h => h === c.toLowerCase() || h.replace(/[^a-z0-9]/g,'') === c.toLowerCase().replace(/[^a-z0-9]/g,''));
+          if (i >= 0) return fields[i];
+        }
+        return null;
+      };
+
+      const fId     = find('tcgplayer id','tcgplayer_id','id');
+      const fName   = find('product name','name','card name','title');
+      const fSet    = find('set name','set','edition');
+      const fCond   = find('condition','cond');
+      const fPrint  = find('printing','foil','finish');
+      const fMarket = find('tcg market price','market price','price');
+      const fQty    = find('total quantity','quantity','qty');
+
+      if (!fName || !fMarket) {
+        if (errEl) { errEl.className = ''; errEl.textContent = 'Missing required columns: need "Product Name" and "TCG Market Price".'; }
+        return;
+      }
+
+      PA.rows = result.data
+        .filter(r => (r[fMarket] || '').trim() !== '')
+        .map(r => {
+          const rawCond   = fCond  ? (r[fCond]  || '') : '';
+          const hasFoilC  = /foil/i.test(rawCond);
+          const printing  = hasFoilC ? 'Foil' : (fPrint ? (r[fPrint] || 'Normal') : 'Normal');
+          const cleanCond = hasFoilC ? rawCond.replace(/\s*foil\s*/i, '').trim() : rawCond;
+          const rawQty    = fQty ? (r[fQty] || '0') : '0';
+          const qty       = parseInt(rawQty, 10) || 1;
+          return {
+            name:        fName ? (r[fName]   || '') : '',
+            set:         fSet  ? (r[fSet]    || '') : '',
+            condition:   cleanCond,
+            printing:    printing,
+            marketPrice: (r[fMarket] || '').trim(),
+            tcgId:       fId  ? (r[fId]     || '') : '',
+            qty:         qty,
+            number:      '',
+          };
+        });
+
+      PA.hasTcgIds = !!(fId && PA.rows.some(r => r.tcgId));
+      PA.fromPaste = true;
+      paRender();
+
+      // Update source label to reflect file load
+      const srcEl = $('#pa-source-label');
+      if (srcEl) srcEl.textContent = '✓ Loaded from TCGPlayer MyPricing CSV';
+      const cntEl = $('#pa-row-count');
+      if (cntEl) cntEl.textContent = `${PA.rows.length} cards`;
     }
 
     function paLoadFromPaste() {
