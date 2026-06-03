@@ -2406,6 +2406,7 @@
       const fPrint  = find('printing','foil','finish');
       const fMarket = find('tcg market price','market price','price');
       const fQty    = find('total quantity','quantity','qty');
+      const fNumber = find('number','collector number','card #','#','num');
 
       if (!fName || !fMarket) {
         if (errEl) { errEl.className = ''; errEl.textContent = 'Missing required columns: need "Product Name" and "TCG Market Price".'; }
@@ -2427,9 +2428,9 @@
             condition:   cleanCond,
             printing:    printing,
             marketPrice: (r[fMarket] || '').trim(),
-            tcgId:       fId  ? (r[fId]     || '') : '',
+            tcgId:       fId     ? (r[fId]     || '') : '',
             qty:         qty,
-            number:      '',
+            number:      fNumber ? (r[fNumber] || '') : '',
           };
         });
 
