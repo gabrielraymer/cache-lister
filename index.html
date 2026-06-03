@@ -1341,13 +1341,15 @@
 
     // ── Price Adjuster state ───────────────────────────────────────────────
     const PA = {
-      rows: [],          // { name, set, condition, printing, marketPrice, tcgId, qty }
+      rows: [],          // { name, set, condition, printing, marketPrice, tcgId, qty, _raw? }
       pct: 100,
       floor: 0.25,
       ceiling: null,
       round: 'none',
       hasTcgIds: false,
       fromPaste: false,
+      sourceHeaders: null,  // original CSV headers for passthrough export
+      priceCol: null,       // which header is the price column to overwrite
     };
 
     // ── Tab routing ────────────────────────────────────────────────────────
@@ -2413,6 +2415,9 @@
         return;
       }
 
+      PA.sourceHeaders = fields;
+      PA.priceCol      = fMarket;
+
       PA.rows = result.data
         .filter(r => (r[fMarket] || '').trim() !== '')
         .map(r => {
@@ -2431,6 +2436,7 @@
             tcgId:       fId     ? (r[fId]     || '') : '',
             qty:         qty,
             number:      fNumber ? (r[fNumber] || '') : '',
+            _raw:        r,   // full source row for passthrough export
           };
         });
 
@@ -2665,27 +2671,37 @@
       const exportable = PA.rows.filter(r => r.marketPrice && !isNaN(parseFloat(r.marketPrice)) && parseFloat(r.marketPrice) > 0);
       if (!exportable.length) { alert('No rows with valid market prices to export.'); return; }
 
-      if (PA.hasTcgIds) {
-        // Full TCGPlayer format with IDs
+      if (PA.sourceHeaders && PA.sourceHeaders.length && exportable[0]._raw) {
+        // Passthrough — keep every source column, only overwrite the price column
+        const priceCol = PA.priceCol || 'TCG Marketplace Price';
+        const rows = exportable.map(r => {
+          const newPrice = paComputePrice(r.marketPrice);
+          const out = Object.assign({}, r._raw);
+          out[priceCol] = newPrice !== null ? newPrice.toFixed(2) : r._raw[priceCol];
+          return out;
+        });
+        dlFile(Papa.unparse(rows, { columns: PA.sourceHeaders }), filename);
+      } else if (PA.hasTcgIds) {
+        // Fallback: constructed rows with IDs (paste path)
         const rows = exportable.map(r => {
           const newPrice = paComputePrice(r.marketPrice);
           return {
-            'TCGplayer Id':        r.tcgId,
-            'Product Name':        r.name,
-            'Set Name':            r.set,
-            'Number':              r.number,
-            'Condition':           r.condition,
-            'Printing':            r.printing || 'Normal',
-            'Market Price':        parseFloat(r.marketPrice).toFixed(2),
+            'TCGplayer Id':          r.tcgId,
+            'Product Name':          r.name,
+            'Set Name':              r.set,
+            'Number':                r.number,
+            'Condition':             r.condition,
+            'Printing':              r.printing || 'Normal',
+            'Market Price':          parseFloat(r.marketPrice).toFixed(2),
             'TCG Marketplace Price': newPrice !== null ? newPrice.toFixed(2) : '',
-            'Add to Quantity':     0,
+            'Add to Quantity':       0,
           };
         });
         dlFile(Papa.unparse(rows, {
           columns: ['TCGplayer Id','Product Name','Set Name','Number','Condition','Printing','Market Price','TCG Marketplace Price','Add to Quantity'],
         }), filename);
       } else {
-        // No IDs — omit ID column, note in output
+        // No IDs — paste path without IDs
         const rows = exportable.map(r => {
           const newPrice = paComputePrice(r.marketPrice);
           return {
