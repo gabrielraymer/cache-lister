@@ -7,6 +7,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- `Condition` no longer required in the uploaded card list — lists without a Condition column (common for hand-edited/custom exports) now default every row to Near Mint (NM) instead of blocking the upload with "Missing required columns: condition".
+
 ---
 
 ## [1.1.3] — 2026-05-18

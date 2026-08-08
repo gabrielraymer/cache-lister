@@ -1568,7 +1568,7 @@
     }
 
     // ── File 2 — Seller list ───────────────────────────────────────────────
-    const SELLER_REQ = ['name','set','condition','quantity'];
+    const SELLER_REQ = ['name','set','quantity'];
 
     function detectCols(headers) {
       const lc = headers.map(h => h.toLowerCase().trim());
@@ -1598,7 +1598,7 @@
       const missing = SELLER_REQ.filter(k => !colMap[k]);
       if (missing.length) {
         restoreDropZone(2);
-        showErr(2, 'Missing required columns: ' + missing.join(', ') + '. Your CSV must include Name, Set, Condition, and Quantity columns.');
+        showErr(2, 'Missing required columns: ' + missing.join(', ') + '. Your CSV must include Name, Set, and Quantity columns.');
         return;
       }
       S.sellerList = res.data;
@@ -1620,14 +1620,14 @@
       el.classList.remove('hidden');
       const FIELDS = [
         { key:'name', label:'Name', req:true }, { key:'number', label:'Number', req:false },
-        { key:'set', label:'Set', req:true }, { key:'condition', label:'Condition', req:true },
+        { key:'set', label:'Set', req:true }, { key:'condition', label:'Condition', req:false, fallback:'not found — assuming NM' },
         { key:'quantity', label:'Quantity', req:true }, { key:'foil', label:'Foil', req:false },
         { key:'price', label:'Price', req:false },
       ];
       const mapHtml = FIELDS.map(f => {
         const val = cm[f.key];
         const cls = val ? '' : (f.req ? 'missing' : 'absent');
-        const display = val ? esc(val) : (f.req ? 'NOT FOUND' : 'not detected');
+        const display = val ? esc(val) : (f.req ? 'NOT FOUND' : (f.fallback || 'not detected'));
         return `<div class="cmi"><div class="cmi-key">${f.label}</div><div class="cmi-val ${cls}">${display}</div></div>`;
       }).join('');
       const previewCols = Object.values(cm).filter(Boolean);
@@ -1775,7 +1775,7 @@
       const rawName  = row[cm.name]      || '';
       const rawNum   = cm.number ? (row[cm.number] || '') : '';
       const rawSet   = resolveSetCode(row[cm.set] || '', setsMap, catalogSetIndex);
-      const rawCond  = row[cm.condition] || '';
+      const rawCond  = cm.condition ? (row[cm.condition] || '') : 'NM';
       const rawFoil  = cm.foil ? (row[cm.foil] || '') : '';
       const cond    = mapCond(rawCond);
       const printing = mapFoil(rawFoil) === 'Normal' && !cm.foil && condHasFoil(rawCond)

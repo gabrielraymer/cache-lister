@@ -46,13 +46,13 @@ A simple spreadsheet you create. Minimum required columns:
 | `Name` | Card name. Case-insensitive, trimmed. |
 | `Number` | Collector number. Most reliable match key. |
 | `Set` | Set name or code. Fuzzy-matched — short codes like `ECC` or `[CMD]` are resolved against Scryfall set data and your catalog automatically. |
-| `Condition` | `NM`, `LP`, `MP`, `HP`, `DMG`, `DM`, `SP`, `EX`, `VG` or full words. TCGPlayer combined values like `Near Mint Foil` also accepted. |
 | `Quantity` | Number of copies. |
 
 Optional columns:
 
 | Column | Notes |
 |--------|-------|
+| `Condition` | `NM`, `LP`, `MP`, `HP`, `DMG`, `DM`, `SP`, `EX`, `VG` or full words. TCGPlayer combined values like `Near Mint Foil` also accepted. Absent = every row is assumed Near Mint (NM). |
 | `Foil` | `yes`, `foil`, `true`, `1` = Foil. Absent or empty = Normal. Foil is also detected automatically from `Near Mint Foil`-style condition values. |
 | `Price` | Your listing price. Falls back to TCGPlayer market price if omitted. |
 
